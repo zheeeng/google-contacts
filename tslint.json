@@ -170,7 +170,8 @@
 		"arrow-return-shorthand": [
 			true,
 			"multiline"
-		],
+    ],
+    "ordered-imports": false,
 		"binary-expression-operand-order": true,
 		"callable-types": true,
 		"class-name": true,
