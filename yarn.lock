@@ -26,6 +26,16 @@
     react-lifecycles-compat "^3.0.4"
     warning "^3.0.0"
 
+"@types/gapi.client.people@^1.0.0":
+  version "1.0.0"
+  resolved "https://registry.yarnpkg.com/@types/gapi.client.people/-/gapi.client.people-1.0.0.tgz#03c266aa8494081e4a30c5796d577190faec95f0"
+  dependencies:
+    "@types/gapi.client" "*"
+
+"@types/gapi.client@*":
+  version "1.0.0"
+  resolved "https://registry.yarnpkg.com/@types/gapi.client/-/gapi.client-1.0.0.tgz#aa42501465fcf6440421050da70ec724d4c4c4df"
+
 "@types/jest@^23.3.0":
   version "23.3.0"
   resolved "https://registry.yarnpkg.com/@types/jest/-/jest-23.3.0.tgz#5dd70033b616a6228042244ebd992f6426808810"
