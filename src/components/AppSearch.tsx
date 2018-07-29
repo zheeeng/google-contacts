@@ -16,6 +16,7 @@ const styles = (theme: Theme) => createStyles({
     'maxWidth': 540,
     'borderRadius': 2,
     'display': 'flex',
+    'alignItems': 'center',
     'background': fade(theme.palette.common.white, 0.15),
     '&:hover': {
       background: fade(theme.palette.common.white, 0.25),
