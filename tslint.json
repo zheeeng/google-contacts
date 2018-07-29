@@ -49,6 +49,7 @@
 			"allow-named-functions"
 		],
 		"interface-name": false,
+		"interface-over-type-literal": false,
 		"prefer-for-of": true,
 		"typedef-whitespace": [
 			true,
@@ -172,7 +173,8 @@
 		"arrow-return-shorthand": [
 			true,
 			"multiline"
-    ],
+	],
+	"member-ordering": false,
     "ordered-imports": false,
     "object-literal-sort-keys": false,
 		"binary-expression-operand-order": true,
@@ -237,6 +239,7 @@
 		"switch-final-break": true,
 		"variable-name": [
 			true,
+			"allow-leading-underscore",
 			"allow-pascal-case",
 			"ban-keywords",
 			"check-format"
