@@ -1,5 +1,6 @@
 import React from 'react'
 import { withStyles, WithStyles, createStyles, Theme } from '@material-ui/core/styles'
+import { navigate } from '@reach/router'
 import Drawer from '@material-ui/core/Drawer'
 import List from '@material-ui/core/List'
 import Hidden from '@material-ui/core/Hidden'
@@ -18,69 +19,6 @@ import SettingsIcon from '@material-ui/icons/SettingsApplications'
 
 export const drawerWidth = 260
 
-const baseItems = (
-  <>
-    <ListItem button>
-      <ListItemIcon>
-        <ContactsIcon />
-      </ListItemIcon>
-      <ListItemText secondary="Contacts" />
-    </ListItem>
-    <ListItem button>
-      <ListItemIcon>
-        <UpdateIcon />
-      </ListItemIcon>
-      <ListItemText secondary="Frequently contacted" />
-    </ListItem>
-    <ListItem button>
-      <ListItemIcon>
-        <FilterNoneIcon />
-      </ListItemIcon>
-      <ListItemText secondary="Duplicates" />
-    </ListItem>
-  </>
-)
-
-const labelItems = (
-  <>
-    <ListItem button>
-      <ListItemIcon>
-        <LabelIcon />
-      </ListItemIcon>
-      <ListItemText secondary="Label" />
-    </ListItem>
-  </>
-)
-
-const moreItems = (
-  <>
-    <ListItem button>
-      <ListItemIcon>
-        <SettingsIcon />
-      </ListItemIcon>
-      <ListItemText secondary="Settings" />
-    </ListItem>
-    <ListItem button>
-      <ListItemIcon>
-        <FeedbackIcon />
-      </ListItemIcon>
-      <ListItemText secondary="Send feedback" />
-    </ListItem>
-    <ListItem button>
-      <ListItemIcon>
-        <HelpIcon />
-      </ListItemIcon>
-      <ListItemText secondary="Help" />
-    </ListItem>
-    <ListItem button>
-      <ListItemIcon>
-        <ExitToAppIcon />
-      </ListItemIcon>
-      <ListItemText secondary="Switch to the old version" />
-    </ListItem>
-  </>
-)
-
 const styles = (theme: Theme) => createStyles({
   toolbar: theme.mixins.toolbar,
   drawerPaper: {
@@ -94,24 +32,92 @@ interface Props extends WithStyles<typeof styles> {
   onClose: (event: React.SyntheticEvent<{}>) => void,
 }
 
+type Item = {
+  icon: React.ReactElement<any>,
+  path: string,
+  labelText: string,
+}
+
+const baseItems = [
+  {
+    icon: <ContactsIcon />,
+    path: '/contacts',
+    labelText: 'Contacts',
+  },
+  {
+    icon: <UpdateIcon />,
+    path: '/frequent',
+    labelText: 'Frequently contacted',
+  },
+  {
+    icon: <FilterNoneIcon />,
+    path: '/duplicates',
+    labelText: 'Duplicates',
+  },
+]
+
+const labelItems = [
+  {
+    icon: <LabelIcon />,
+    path: '/label',
+    labelText: 'label',
+  },
+]
+
+const moreItems = [
+  {
+    icon: <SettingsIcon />,
+    path: '/settings',
+    labelText: 'Settings',
+  },
+  {
+    icon: <FeedbackIcon />,
+    path: '/feedback',
+    labelText: 'Send feedbacks',
+  },
+  {
+    icon: <HelpIcon />,
+    path: '/help',
+    labelText: 'Help',
+  },
+  {
+    icon: <ExitToAppIcon />,
+    path: '/old',
+    labelText: 'Switch to the old version',
+  },
+]
+
 export class AppSideBar extends React.PureComponent<Props> {
 
-  private renderDrawer () {
-    return (
+  private goTo = (path: string) => () => {
+    navigate(path)
+  }
+
+  private renderDrawerItem = (item: Item) =>
+    (
+      <ListItem button onClick={this.goTo(item.path)}>
+        <ListItemIcon>
+          {item.icon}
+        </ListItemIcon>
+        <ListItemText secondary={item.labelText} />
+      </ListItem>
+    )
+
+  private renderDrawer = () =>
+    (
       <>
         <div className={this.props.classes.toolbar} />
         <Divider />
-        <List>{baseItems}</List>
+        <List>{baseItems.map(this.renderDrawerItem)}</List>
         <Divider />
-        <List>{labelItems}</List>
+        <List>{labelItems.map(this.renderDrawerItem)}</List>
         <Divider />
-        <List>{moreItems}</List>
+        <List>{moreItems.map(this.renderDrawerItem)}}</List>
       </>
     )
-  }
 
-  private renderDrawerContent (isMobile: boolean = false) {
-    return (
+  private renderDrawerContent = (isMobile: boolean = false) =>
+    (
       <Drawer
         variant={isMobile ? 'temporary' : 'persistent'}
         anchor="left"
@@ -125,7 +131,6 @@ export class AppSideBar extends React.PureComponent<Props> {
         {this.renderDrawer()}
       </Drawer>
     )
-  }
 
   render () {
     return (
