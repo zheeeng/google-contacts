@@ -2,6 +2,7 @@ import { Attributes } from 'react'
 
 declare module 'react' {
   interface Attributes {
-    path?: string
+    path?: string,
+    default?: boolean,
   }
 }
