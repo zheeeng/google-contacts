@@ -7,7 +7,7 @@ const en: DomainPresets = {
     AUTH_IS_SIGNING_OUT: 'Account is logging out, please wait a moment',
   },
   UI: {
-    loginButton: 'Login with Goole Account',
+    loginButton: 'Login with Google Account',
     contacts: 'contacts',
   },
 }
