@@ -91,6 +91,7 @@
 			true,
 			"allow-empty-catch"
 		],
+		"no-empty-interface": false,
 		"no-eval": true,
 		"no-for-in-array": true,
 		"no-inferred-empty-object-type": true,
