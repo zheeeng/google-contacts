@@ -1,6 +1,7 @@
 import React from 'react'
 import classNames from 'classnames'
 import { withStyles, WithStyles, createStyles, Theme } from '@material-ui/core/styles'
+import Hidden from '@material-ui/core/Hidden'
 import Menu from '@material-ui/core/Menu'
 import MenuItem from '@material-ui/core/MenuItem'
 import AppBar from '@material-ui/core/AppBar'
@@ -11,6 +12,7 @@ import MenuIcon from '@material-ui/icons/Menu'
 import AccountCircle from '@material-ui/icons/AccountCircle'
 
 import AppSideBar, { drawerWidth } from './AppSideBar'
+import AppSearch from './AppSearch'
 
 const styles = (theme: Theme) => createStyles({
   root: {
@@ -26,7 +28,7 @@ const styles = (theme: Theme) => createStyles({
   appBar: {
     zIndex: 1201,
   },
-  headline: {
+  appSearch: {
     flexGrow: 1,
   },
   content: {
@@ -88,9 +90,12 @@ export class Main extends React.PureComponent<Props, State> {
         >
           <MenuIcon />
         </IconButton>
-        <Typography variant="headline" color="inherit" className={classes.headline} noWrap>
-          Google Contacts
-        </Typography>
+        <Hidden smDown implementation="css">
+          <Typography variant="headline" color="inherit" noWrap>
+            Google Contacts
+          </Typography>
+        </Hidden>
+        <AppSearch className={classes.appSearch}/>
         <div>
           <IconButton
             onClick={this.handleAccountMenuClick}
