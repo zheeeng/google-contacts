@@ -54,7 +54,8 @@ const styles = (theme: Theme) => createStyles({
   },
 })
 
-interface Props extends WithStyles<typeof styles> {}
+interface Props extends WithStyles<typeof styles> {
+}
 interface State {
   drawerOpen: boolean,
   accountMenuAnchorEl?: HTMLElement,
@@ -66,19 +67,19 @@ export class Main extends React.PureComponent<Props, State> {
     accountMenuAnchorEl: undefined,
   }
 
-  handleDrawerToggle = () => {
+  private handleDrawerToggle = () => {
     this.setState(state => ({ ...state, drawerOpen: !state.drawerOpen }))
   }
-  handleAccountMenuClick = (event: any) => {
+  private handleAccountMenuClick = (event: any) => {
     event.persist()
 
     this.setState(state => ({ ...state, accountMenuAnchorEl: event.target }))
   }
-  handleAccountMenuClose = () => {
+  private handleAccountMenuClose = () => {
     this.setState(state => ({ ...state, accountMenuAnchorEl: undefined }))
   }
 
-  private renderAppBar () {
+  private renderAppBar = () => {
     const { classes } = this.props
 
     return (
@@ -142,7 +143,7 @@ export class Main extends React.PureComponent<Props, State> {
         />
         <main className={classNames(classes.content, !this.state.drawerOpen && classes.contentShiftLeft)}>
           <div className={classes.toolbar} />
-          <Typography noWrap>{'You think water moves fast? You should see ice.'}</Typography>
+          {this.props.children}
         </main>
       </div>
     )
