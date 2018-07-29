@@ -1,3 +1,7 @@
+require('./env-check-script')
+
+const path = require('path')
+
 module.exports = function override (config, env) {
   const extendAlias = {
     '~src': path.resolve(__dirname, 'src')
