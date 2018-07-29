@@ -48,6 +48,7 @@
 			"allow-declarations",
 			"allow-named-functions"
 		],
+		"interface-name": false,
 		"prefer-for-of": true,
 		"typedef-whitespace": [
 			true,
@@ -136,6 +137,7 @@
 			true,
 			"LF"
 		],
+		"max-classes-per-file": false,
 		"max-file-line-count": [
 			true,
 			1000
@@ -172,6 +174,7 @@
 			"multiline"
     ],
     "ordered-imports": false,
+    "object-literal-sort-keys": false,
 		"binary-expression-operand-order": true,
 		"callable-types": true,
 		"class-name": true,
