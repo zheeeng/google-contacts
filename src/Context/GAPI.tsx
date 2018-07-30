@@ -37,7 +37,7 @@ export type Label = {
 interface ConnectionService {
   isGettingConnections: boolean,
   connectionApiHasError: boolean,
-  connections: Contact[],
+  contacts: Contact[],
   fetchContacts: () => Promise<Person[]>,
   createContact: (contact: Partial<Contact>) => Promise<any>,
   deleteContact: (resourceName: string) => Promise<any>,
@@ -145,7 +145,7 @@ export function servletHub<P> (Component: React.ComponentType<P>) {
       return {
         isGettingConnections: this.state.isGettingConnections,
         connectionApiHasError: this.state.connectionApiHasError,
-        connections: this.state.connections.map(convertPersonToContact),
+        contacts: this.state.connections.map(convertPersonToContact),
         fetchContacts: this.fetchConnections,
         createContact: this.createContact,
         deleteContact: this.deleteContact,
