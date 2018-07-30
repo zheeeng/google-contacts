@@ -1,44 +1,32 @@
 import React from 'react'
-import { withStyles, WithStyles, createStyles, Theme } from '@material-ui/core/styles'
-import Button from '@material-ui/core/Button'
-import Typography from '@material-ui/core/Typography'
-import OpenInNewIcon from '@material-ui/icons/OpenInNew'
-import AutoRenewIcon from '@material-ui/icons/Autorenew'
+import { connectionServlet, groupServlet, GroupServletProps, ConnectionServletProps } from '~src/context/GAPI'
+import ContactList from './ContactList'
 
-import { groupServlet, GroupServletProps, Contact } from '~src/Context/GAPI'
-
-const styles = (theme: Theme) => createStyles({
-  root: {
-    width: '100%',
-    height: '100%',
-    minHeight: 500,
-    display: 'flex',
-    alignItems: 'center',
-    flexDirection: 'column',
-  },
-  progress: {
-    marginTop: theme.spacing.unit * 4,
-  },
-  listItem: {
-    width: '100%',
-    // tslint:disable-next-line:max-line-length
-    margin: `${theme.spacing.unit}px -${theme.spacing.unit * 2}px ${theme.spacing.unit}px ${theme.spacing.unit * 2}px`,
-    backgroundColor: theme.palette.background.paper,
-  },
-})
-
-type Props = GroupServletProps & WithStyles<typeof styles> & {
+type Props = GroupServletProps & ConnectionServletProps & {
   id?: string,
 }
 
 type State = {
+  lastContactsLength: number,
 }
 
 class LabelPage extends React.PureComponent<Props, State> {
 
+  state = {
+    lastContactsLength: 0,
+  }
+
   render () {
+    const contacts = this.props.id && this.props.groupService.getLabelMembers(this.props.id) || []
+
     return (
-      <div>hello</div>
+      <ContactList
+        contacts={contacts}
+        createContact={this.props.connectionService.createContact}
+        isGettingConnections={this.props.connectionService.isGettingConnections}
+        deleteContact={this.props.connectionService.deleteContact}
+        hasError={this.props.connectionService.connectionApiHasError}
+      />
     )
   }
 
@@ -48,13 +36,22 @@ class LabelPage extends React.PureComponent<Props, State> {
     this.props.groupService.fetchLabelMembers(this.props.id)
   }
 
-  componentDidUpdate (prevProp: Props) {
+  componentDidUpdate (prevProp: Props, prevState: State) {
     if (!this.props.id) return
 
-    if (this.props.id !== prevProp.id) {
-      this.props.groupService.fetchLabelMembers(this.props.id)
-    }
+    if ((this.props.id !== prevProp.id)
+      || (this.props.connectionService.contacts.length !== prevState.lastContactsLength)) {
+        this.setState(
+          state => ({
+            ...state,
+            lastContactsLength: this.props.connectionService.contacts.length,
+          }),
+          () => {
+            this.props.id && this.props.groupService.fetchLabelMembers(this.props.id)
+          },
+        )
+      }
   }
 }
 
-export default groupServlet(withStyles(styles)(LabelPage))
+export default connectionServlet(groupServlet(LabelPage))
