@@ -3,6 +3,7 @@ import { withStyles, WithStyles, createStyles, Theme } from '@material-ui/core/s
 import { navigate } from '@reach/router'
 import Drawer from '@material-ui/core/Drawer'
 import List from '@material-ui/core/List'
+import Collapse from '@material-ui/core/Collapse'
 import Hidden from '@material-ui/core/Hidden'
 import Divider from '@material-ui/core/Divider'
 import ListItem from '@material-ui/core/ListItem'
@@ -16,6 +17,18 @@ import FeedbackIcon from '@material-ui/icons/Feedback'
 import HelpIcon from '@material-ui/icons/Help'
 import ExitToAppIcon from '@material-ui/icons/ExitToApp'
 import SettingsIcon from '@material-ui/icons/SettingsApplications'
+import AddIcon from '@material-ui/icons/Add'
+import UpIcon from '@material-ui/icons/KeyboardArrowUp'
+import DownIcon from '@material-ui/icons/KeyboardArrowDown'
+import Dialog from '@material-ui/core/Dialog'
+import DialogActions from '@material-ui/core/DialogActions'
+import DialogContent from '@material-ui/core/DialogContent'
+import DialogTitle from '@material-ui/core/DialogTitle'
+import Button from '@material-ui/core/Button'
+import TextField from '@material-ui/core/TextField'
+import Zoom from '@material-ui/core/Zoom'
+
+import { groupServlet, GroupServletProps, Label } from '~src/Context/GAPI'
 
 export const drawerWidth = 260
 
@@ -25,9 +38,12 @@ const styles = (theme: Theme) => createStyles({
     width: drawerWidth,
     padding: theme.spacing.unit,
   },
+  nestedItems: {
+    paddingLeft: theme.spacing.unit * 2,
+  },
 })
 
-interface Props extends WithStyles<typeof styles> {
+type Props = GroupServletProps & WithStyles<typeof styles> & {
   open: boolean,
   onClose: (event: React.SyntheticEvent<{}>) => void,
 }
@@ -56,13 +72,11 @@ const baseItems = [
   },
 ]
 
-const labelItems = [
-  {
-    icon: <LabelIcon />,
-    path: '/label',
-    labelText: 'label',
-  },
-]
+const convertLabelToLabelItem = (label: Label) => ({
+  icon: <LabelIcon />,
+  path: `/label/${label.resourceName}`,
+  labelText: label.name,
+})
 
 const moreItems = [
   {
@@ -87,11 +101,81 @@ const moreItems = [
   },
 ]
 
-export class AppSideBar extends React.PureComponent<Props> {
+interface State {
+  newLabelName: string,
+  labelMenuOpen: boolean,
+  createLabelDialogOpen: boolean,
+}
+
+export class AppSideBar extends React.PureComponent<Props, State> {
+
+  state = {
+    newLabelName: '',
+    labelMenuOpen: true,
+    createLabelDialogOpen: false,
+  }
+
+  private toggleLabelMenuOpen = () => {
+    this.setState(state => ({ ...state, labelMenuOpen: !state.labelMenuOpen }))
+  }
+
+  private openCreateLabelDialog = () => {
+    this.setState(state => ({
+      ...state,
+      createLabelDialogOpen: true,
+      newLabelName: '',
+    }))
+  }
+
+  private closeCreateLabelDialog = () => {
+    this.setState(state => ({
+      ...state,
+      createLabelDialogOpen: false,
+      newLabelName: '',
+    }))
+  }
+
+  private handleNewLabelNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value
+    this.setState(state => ({ ...state, newLabelName: value }))
+  }
+
+  private submitNewLabel = () => {
+    const newLabelName = this.state.newLabelName
+    this.setState(state => ({
+      ...state,
+      createLabelDialogOpen: false,
+      newLabelName: '',
+    }))
+
+    // this.props.groupService.groupApi.createGroup({
+    //   label: newLabelName,
+    // })
+  }
 
   private goTo = (path: string) => () => {
     navigate(path)
   }
+
+  private renderExpandableLabels = () =>
+    (
+      <ListItem button onClick={this.toggleLabelMenuOpen}>
+        <ListItemIcon>
+          {this.state.labelMenuOpen ? <UpIcon /> : <DownIcon />}
+        </ListItemIcon>
+        <ListItemText secondary="Labels" />
+      </ListItem>
+    )
+
+  private renderCreateLabelItem = () =>
+    (
+      <ListItem button onClick={this.openCreateLabelDialog}>
+        <ListItemIcon>
+          <AddIcon />
+        </ListItemIcon>
+        <ListItemText secondary="Create Label" />
+      </ListItem>
+    )
 
   private renderDrawerItem = (item: Item) =>
     (
@@ -110,7 +194,21 @@ export class AppSideBar extends React.PureComponent<Props> {
         <Divider />
         <List>{baseItems.map(this.renderDrawerItem)}</List>
         <Divider />
-        <List>{labelItems.map(this.renderDrawerItem)}</List>
+        <List>
+          {this.renderExpandableLabels()}
+          <Collapse in={this.state.labelMenuOpen} timeout="auto" unmountOnExit>
+            <List
+              disablePadding
+              className={this.props.classes.nestedItems}
+            >
+              {this.props.groupService.labels
+                .map(convertLabelToLabelItem)
+                .map(this.renderDrawerItem)
+              }
+            </List>
+          </Collapse>
+          {this.renderCreateLabelItem()}
+        </List>
         <Divider />
         <List>{moreItems.map(this.renderDrawerItem)}}</List>
       </>
@@ -132,6 +230,35 @@ export class AppSideBar extends React.PureComponent<Props> {
       </Drawer>
     )
 
+  private renderCreateLabelDialog = () => (
+    <Dialog
+      open={this.state.createLabelDialogOpen}
+      onClose={this.closeCreateLabelDialog}
+      TransitionComponent={Zoom}
+    >
+      <DialogTitle>创建联系人</DialogTitle>
+      <DialogContent>
+        <TextField
+          autoFocus
+          margin="dense"
+          label="Label"
+          type="text"
+          value={this.state.newLabelName}
+          onChange={this.handleNewLabelNameChange}
+          fullWidth
+        />
+      </DialogContent>
+      <DialogActions>
+        <Button onClick={this.closeCreateLabelDialog} color="primary">
+          取消
+        </Button>
+        <Button variant="contained" color="primary" onClick={this.submitNewLabel}>
+          提交
+        </Button>
+      </DialogActions>
+    </Dialog>
+  )
+
   render () {
     return (
       <>
@@ -141,9 +268,14 @@ export class AppSideBar extends React.PureComponent<Props> {
         <Hidden smDown implementation="css">
           {this.renderDrawerContent()}
         </Hidden>
+        {this.renderCreateLabelDialog()}
       </>
     )
   }
+
+  componentDidMount () {
+    this.props.groupService.fetchGroups()
+  }
 }
 
-export default withStyles(styles)(AppSideBar)
+export default groupServlet(withStyles(styles)(AppSideBar))
