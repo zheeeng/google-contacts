@@ -21,13 +21,28 @@ interface AuthService {
   isSigningIn: boolean,
   isSigningOut: boolean,
 }
+
+export type Contact = {
+  name: string,
+  email: string,
+  avatar: string,
+  resourceName: string,
+}
 interface ConnectionService {
   isGettingConnections: boolean,
   connectionApiHasError: boolean,
-  connections: Person[],
+  connections: Contact[],
   fetchConnections: () => Promise<Person[]>,
   deleteContact: (resourceName: string) => Promise<any>
 }
+
+const convertPersonToContact = (person: Person): Contact =>
+  ({
+    name: person.names && person.names[0] && person.names[0].displayName || '',
+    email: person.emailAddresses && person.emailAddresses[0] && person.emailAddresses[0].value || '',
+    avatar: person.photos && person.photos[0] && person.photos[0].url || '',
+    resourceName: person.resourceName!,
+  })
 interface GroupService {}
 
 interface ServletHubProps {
@@ -60,7 +75,7 @@ export function servletHub<P> (Component: React.ComponentType<P>) {
     static displayName = displayName
 
     // TODO: refactor them
-    state = {
+    state: State = {
       // auth
       user: undefined,
       isSigningIn: false,
@@ -141,11 +156,12 @@ export function servletHub<P> (Component: React.ComponentType<P>) {
         isSigningOut: this.state.isSigningOut,
       }
     }
+
     private get connectionService (): ConnectionService {
       return {
         isGettingConnections: this.state.isGettingConnections,
         connectionApiHasError: this.state.connectionApiHasError,
-        connections: this.state.connections,
+        connections: this.state.connections.map(convertPersonToContact),
         fetchConnections: this.fetchConnections,
         deleteContact: this.deleteContact,
       }
@@ -298,7 +314,7 @@ export function servletHub<P> (Component: React.ComponentType<P>) {
 
         this.setState(state => ({
           ...state,
-          connections: state.connections.filter(connection => connection.resourceName === resourceName),
+          connections: state.connections.filter(connection => connection.resourceName !== resourceName),
         }))
       } catch (error) {
         toastCapture(error)
