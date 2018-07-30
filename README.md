@@ -1,24 +1,38 @@
-# Google-contacts
+# Google Contacts
 Google Contacts Demo
-
-
 
 ## Setup
 
-## prerequisite
+### prerequisite
 
-Make sure you have got the Google API Key and a Client ID, you may get them through the following link:
+Make sure you have got the Google APP Key and a Client ID, you may get them through the following link:
 
 https://console.developers.google.com/start/api?id=people.googleapis.com&credential=client_key
 
-Once get your keys ready, git clone this repo and then install dependencies:
+### Cli
+
+Take the `yarn` as the example:
+
+git clone this repo and then install dependencies:
 
 ```sh
-yarn
+> git clone https://github.com/zheeeng/Google-contacts.git
+> cd Google-contacts
+> yarn
 ```
 
 Provide these keys as environment variables:
 
 ```shell
-REACT_APP_GOOGLE_APP_KEY=<YOUR_GOOGLE_APP_KEY> REACT_APP_GOOGLE_CLIENT_ID=<YOUR_GOOGLE_CLIENT_ID> yarn start/build
+> REACT_APP_GOOGLE_APP_KEY=<YOUR_GOOGLE_APP_KEY> REACT_APP_GOOGLE_CLIENT_ID=<YOUR_GOOGLE_CLIENT_ID> yarn start
 ```
+
+## Build
+
+```shell
+> REACT_APP_GOOGLE_APP_KEY=<YOUR_GOOGLE_APP_KEY> REACT_APP_GOOGLE_CLIENT_ID=<YOUR_GOOGLE_CLIENT_ID> yarn build
+```
+
+## Note
+
+App requires you login with Google Account and Chrome will warns you insecure accessing, just bypass it and authorize your consent.
