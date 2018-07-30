@@ -110,8 +110,30 @@ class Contacts extends React.PureComponent<Props, State> {
       .find(connection => connection.resourceName === this.state.toDisplayResourceName)
   }
 
-  private toDisplayContact = (resourceName: string) => () => {
-    this.setState(state => ({ ...state, toDisplayResourceName: resourceName }))
+  // nextOrPrev: undefined set current, true set next, false set prev
+  private toDisplayContact = (resourceName: string, nextOrPrev?: boolean) => () => {
+    if (nextOrPrev === undefined) {
+      this.setState(
+        state => ({ ...state, toDisplayResourceName: resourceName }),
+      )
+    } else {
+      const connections = this.props.connectionService.connections
+      const currentIndex = connections.findIndex(
+        contact => contact.resourceName === resourceName,
+      )
+
+      if ((nextOrPrev === true) && (currentIndex < connections.length - 1)) {
+        const nextResource = connections[currentIndex + 1].resourceName
+        this.setState(
+          state => ({ ...state, toDisplayResourceName: nextResource }),
+        )
+      } else if ((nextOrPrev === false) && (currentIndex > 0)) {
+        const prevResource = connections[currentIndex - 1].resourceName
+        this.setState(
+          state => ({ ...state, toDisplayResourceName: prevResource }),
+        )
+      }
+    }
   }
 
   private toDeleteContact = (resourceName: string) => () => {
