@@ -3,7 +3,11 @@ import { DomainPresets, LocaleName, LocalesType, defaultLocale } from './locale.
 import en from '~src/config/locale-en'
 import zh from '~src/config/locale-zh'
 
-type Store = LocalesType & { currentLocale: LocaleName, local: DomainPresets }
+type Store = LocalesType & {
+  currentLocale: LocaleName,
+  local: DomainPresets,
+  changeLocale: (locale: string) => void,
+}
 
 interface State {
   currentLocale: LocaleName,
@@ -15,6 +19,7 @@ const { Provider, Consumer} = React.createContext<Store>({
   ...availableLocales,
   currentLocale: defaultLocale,
   local: availableLocales[defaultLocale],
+  changeLocale: () => {/**/},
 })
 
 export {
@@ -36,6 +41,13 @@ export function provideLocales<P> (Component: React.ComponentType<P>) {
         ...availableLocales,
         currentLocale: this.state.currentLocale,
         local: availableLocales[this.state.currentLocale],
+        changeLocale: this.changeLocale,
+      }
+    }
+
+    private changeLocale = (locale: string) => {
+      if (availableLocales.hasOwnProperty(locale)) {
+        this.setState(state => ({ ...state, currentLocale: locale as LocaleName }))
       }
     }
 
@@ -51,19 +63,24 @@ export function provideLocales<P> (Component: React.ComponentType<P>) {
   }
 }
 
-export function localize<P> (
-  Component: React.ComponentType<P & { local: DomainPresets }>,
+export type LocalizeProps = {
+  local: DomainPresets,
+  changeLocale: (locale: string) => void,
+}
+
+export function localize<P extends LocalizeProps> (
+  Component: React.ComponentType<P>,
 ) {
   const displayName = `InjectedServiceComponent(${Component.displayName || Component.name || 'Component'})`
 
-  return class LocalizedComponent extends React.PureComponent<P> {
+  return class LocalizedComponent extends React.PureComponent<Omit<P, keyof LocalizeProps>> {
     static displayName = displayName
 
     render () {
       return (
         <Consumer>
-          {({ local }) => (
-            <Component {...this.props} local={local} />
+          {({ local, changeLocale }) => (
+            <Component {...this.props} local={local} changeLocale={changeLocale} />
           )}
         </Consumer>
       )
