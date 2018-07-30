@@ -10,7 +10,7 @@ export type Person = gapi.client.people.Person
 type Store = {
   authService: AuthService,
   connectionService: ConnectionService,
-  // groupService: GroupService,
+  groupService: GroupService,
 }
 
 interface AuthService {
@@ -44,7 +44,10 @@ const convertPersonToContact = (person: Person): Contact =>
     avatar: person.photos && person.photos[0] && person.photos[0].url || '',
     resourceName: person.resourceName!,
   })
-interface GroupService {}
+interface GroupService {
+  groupAPI?: gapi.client.people.ContactGroupsResource
+  groupMemberAPI?: gapi.client.people.MembersResource
+}
 
 interface ServletHubProps {
   local: DomainPresets,
@@ -91,57 +94,11 @@ export function servletHub<P> (Component: React.ComponentType<P>) {
     }
 
     private _tasks: QueuedTask[] = []
-    private _authInstance?: gapi.auth2.GoogleAuth
-    private _peopleAPI?: gapi.client.people.PeopleResource
-    private _connectionAPI?: gapi.client.people.ConnectionsResource
-
-    /**
-     * Getter authInstance
-     * @return {gapi.auth2.GoogleAuth}
-     */
-    get authInstance (): gapi.auth2.GoogleAuth | undefined {
-      return this._authInstance
-    }
-
-    /**
-     * Setter peopleAPI
-     * @param {gapi.client.people.PeopleResource} value
-     */
-    set peopleAPI (value: gapi.client.people.PeopleResource | undefined) {
-      this._peopleAPI = value
-    }
-
-    /**
-     * Getter peopleAPI
-     * @return {gapi.client.people.PeopleResource}
-     */
-    get peopleAPI (): gapi.client.people.PeopleResource | undefined {
-      return this._peopleAPI
-    }
-
-    /**
-     * Setter connectionAPI
-     * @param {gapi.client.people.ConnectionsResource} value
-     */
-    set connectionAPI (value: gapi.client.people.ConnectionsResource | undefined) {
-      this._connectionAPI = value
-    }
-
-    /**
-     * Getter connectionAPI
-     * @return {gapi.client.people.ConnectionsResource}
-     */
-    get connectionAPI (): gapi.client.people.ConnectionsResource | undefined {
-      return this._connectionAPI
-    }
-
-    /**
-     * Setter authInstance
-     * @param {gapi.auth2.GoogleAuth} value
-     */
-    set authInstance (value: gapi.auth2.GoogleAuth | undefined) {
-      this._authInstance = value
-    }
+    private authInstance?: gapi.auth2.GoogleAuth
+    private peopleAPI?: gapi.client.people.PeopleResource
+    private connectionAPI?: gapi.client.people.ConnectionsResource
+    private groupAPI?: gapi.client.people.ContactGroupsResource
+    private groupMemberAPI?: gapi.client.people.MembersResource
 
     private get isSignedIn (): boolean {
       return !!this.authInstance && this.authInstance.isSignedIn.get()
@@ -169,11 +126,19 @@ export function servletHub<P> (Component: React.ComponentType<P>) {
       }
     }
 
+    private get groupService (): GroupService {
+      return {
+        groupAPI: this.groupAPI,
+        groupMemberAPI: this.groupMemberAPI,
+      }
+    }
+
     render () {
       const authService = this.authService
       const connectionService = this.connectionService
+      const groupService = this.groupService
       return (
-        <Provider value={{ authService, connectionService }}>
+        <Provider value={{ authService, connectionService, groupService }}>
           <Component {...this.props} />
         </Provider>
       )
@@ -189,6 +154,8 @@ export function servletHub<P> (Component: React.ComponentType<P>) {
       this.authInstance = gapi.auth2.getAuthInstance()
       this.connectionAPI = (gapi.client.people as any).people.connections
       this.peopleAPI = (gapi.client.people as any).people
+      this.groupAPI = (gapi.client.people as any).contactGroups
+      this.groupMemberAPI = (gapi.client.people as any).contactGroups.members
 
       this.authInstance.isSignedIn.listen(this.updateSignInStatus)
 
