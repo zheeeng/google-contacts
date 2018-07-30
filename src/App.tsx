@@ -13,6 +13,7 @@ import { provideLocales, localize } from '~src/Context/Locale'
 
 import Main from '~src/components/Main'
 import SignIn from '~src/components/SignIn'
+import Contacts from '~src/components/Contacts'
 
 interface Props extends AuthServletProps {}
 
@@ -23,7 +24,6 @@ const theme = createMuiTheme({
 })
 
 const Fallback = () => <Typography variant="headline">页面不存在</Typography>
-const Contacts = () => <Typography variant="headline">最近联系人</Typography>
 const Frequently = () => <Typography variant="headline">常用联系人</Typography>
 const Duplicates = () => <Typography variant="headline">重复联系人</Typography>
 const Label = () => <Typography variant="headline">标签</Typography>
