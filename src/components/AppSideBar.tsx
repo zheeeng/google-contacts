@@ -95,7 +95,7 @@ export class AppSideBar extends React.PureComponent<Props> {
 
   private renderDrawerItem = (item: Item) =>
     (
-      <ListItem button onClick={this.goTo(item.path)}>
+      <ListItem button key={item.path} onClick={this.goTo(item.path)}>
         <ListItemIcon>
           {item.icon}
         </ListItemIcon>
