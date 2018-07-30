@@ -3,10 +3,15 @@ import { connectionServlet, ConnectionServletProps, Contact } from '~src/Context
 import { withStyles, WithStyles, createStyles, Theme } from '@material-ui/core/styles'
 import Typography from '@material-ui/core/Typography'
 import CircularProgress from '@material-ui/core/CircularProgress'
+import Snackbar from '@material-ui/core/Snackbar'
 import List from '@material-ui/core/List'
 import ListItem from '@material-ui/core/ListItem'
 import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction'
 import ListItemText from '@material-ui/core/ListItemText'
+import TextField from '@material-ui/core/TextField'
+import InputAdornment from '@material-ui/core/InputAdornment'
+import AccountBoxIcon from '@material-ui/icons/AccountBox'
+import EmailIcon from '@material-ui/icons/Email'
 import Avatar from '@material-ui/core/Avatar'
 import Button from '@material-ui/core/Button'
 import IconButton from '@material-ui/core/IconButton'
@@ -96,6 +101,9 @@ interface State {
   toDisplayResourceName: string,
   toDeleteResourceName: string,
   createFormDialogOpen: boolean,
+  notificationMessage: string,
+  newContactName: string,
+  newContactEmail: string,
 }
 
 class Contacts extends React.PureComponent<Props, State> {
@@ -103,6 +111,9 @@ class Contacts extends React.PureComponent<Props, State> {
     toDisplayResourceName: '',
     toDeleteResourceName: '',
     createFormDialogOpen: false,
+    notificationMessage: '',
+    newContactName: '',
+    newContactEmail: '',
   }
 
   private get displayedContact () {
@@ -122,18 +133,26 @@ class Contacts extends React.PureComponent<Props, State> {
         contact => contact.resourceName === resourceName,
       )
 
-      if ((nextOrPrev === true) && (currentIndex < connections.length - 1)) {
+      if (nextOrPrev && (currentIndex < connections.length - 1)) {
         const nextResource = connections[currentIndex + 1].resourceName
         this.setState(
           state => ({ ...state, toDisplayResourceName: nextResource }),
         )
-      } else if ((nextOrPrev === false) && (currentIndex > 0)) {
+      } else if (!nextOrPrev && (currentIndex > 0)) {
         const prevResource = connections[currentIndex - 1].resourceName
         this.setState(
           state => ({ ...state, toDisplayResourceName: prevResource }),
         )
       }
     }
+  }
+
+  private notification = (message: string) => {
+    this.setState(state => ({ ...state, notificationMessage: message }))
+  }
+
+  private clearNotification = () => {
+    this.setState(state => ({ ...state, notificationMessage: '' }))
   }
 
   private toDeleteContact = (resourceName: string) => () => {
@@ -162,13 +181,66 @@ class Contacts extends React.PureComponent<Props, State> {
   }
 
   private openCreateFormDialog = () => {
-    this.setState(state => ({ ...state, createFormDialogOpen: true }))
+    this.setState(state => ({
+      ...state,
+      createFormDialogOpen: true,
+      newContactName: '',
+      newContactEmail: '',
+    }))
   }
+
   private closeCreateFormDialog = () => {
-    this.setState(state => ({ ...state, createFormDialogOpen: false }))
+    this.setState(state => ({
+      ...state,
+      createFormDialogOpen: false,
+      newContactName: '',
+      newContactEmail: '',
+    }))
   }
+
   private submitCreateForm = () => {
-    this.setState(state => ({ ...state, createFormDialogOpen: false }))
+    const { newContactName, newContactEmail } = this.state
+    if (!newContactName) {
+      this.setState(state => ({ ...state, notificationMessage: '用户名不能为空' }))
+
+      return
+    }
+
+    if (!newContactEmail) {
+      this.setState(state => ({ ...state, notificationMessage: '邮箱不能为空' }))
+
+      return
+    }
+
+    this.setState(state => ({
+      ...state,
+      createFormDialogOpen: false,
+      newContactName: '',
+      newContactEmail: '',
+    }))
+
+    this.props.connectionService.createContact({
+      name: newContactName,
+      email: newContactEmail,
+    })
+  }
+
+  private createNewContactFieldChangeHandler =
+    (field: 'email' | 'name') => (e: React.ChangeEvent<HTMLInputElement>) => {
+      const value = e.target.value
+      switch (field) {
+        case 'name': {
+          this.setState(state => ({ ...state, newContactName: value }))
+          return
+        }
+        case 'email': {
+          this.setState(state => ({ ...state, newContactEmail: value }))
+          return
+        }
+        default: {
+          return
+        }
+      }
   }
 
   private renderContact = (contact: Contact) =>
@@ -182,7 +254,7 @@ class Contacts extends React.PureComponent<Props, State> {
           container: this.props.classes.listItem,
         }}
       >
-        <Avatar alt={contact.name} src={contact.avatar} />
+        <Avatar alt={contact.name} src={contact.avatar || ''} />
         <ListItemText primary={contact.name} />
         <ListItemText primary={contact.email} />
         <ListItemSecondaryAction>
@@ -222,6 +294,7 @@ class Contacts extends React.PureComponent<Props, State> {
 
     const connections = this.props.connectionService.connections
     const displayedContact = this.displayedContact || {} as Contact
+    const toDisplayResourceName = this.state.toDisplayResourceName
 
     return (
       <>
@@ -234,49 +307,63 @@ class Contacts extends React.PureComponent<Props, State> {
           </Button>
         </>
         <>
+          <Snackbar
+            anchorOrigin={{
+              vertical: 'top',
+              horizontal: 'center',
+            }}
+            open={!!this.state.notificationMessage}
+            autoHideDuration={4000}
+            onClose={this.clearNotification}
+            message={<span>{this.state.notificationMessage}</span>}
+          />
+        </>
+        <>
           <Dialog
             open={!!displayedContact.resourceName}
             onClose={this.closeDisplayDialog}
             TransitionComponent={Zoom}
           >
-            <Card className={classes.card}>
-              <div className={classes.details}>
-                <CardContent className={classes.content}>
-                  <Typography variant="headline">
-                    {displayedContact.name}
-                  </Typography>
-                  <Typography variant="subheading" color="textSecondary">
-                    {displayedContact.email}
-                  </Typography>
-                </CardContent>
-                <div className={classes.controls}>
-                  <div className={classes.dialogControls}>
-                    <IconButton>
-                      <NavigateBeforeIcon />
-                    </IconButton>
-                    <IconButton>
-                      <NavigateNextIcon />
-                    </IconButton>
-                    <IconButton onClick={this.closeDisplayDialog}>
-                      <CloseIcon className={classes.closeIcon} />
-                    </IconButton>
+            {!!displayedContact.resourceName && (
+              <Card className={classes.card}>
+                <div className={classes.details}>
+                  <CardContent className={classes.content}>
+                    <Typography variant="headline">
+                      {displayedContact.name}
+                    </Typography>
+                    <Typography variant="subheading" color="textSecondary">
+                      {displayedContact.email}
+                    </Typography>
+                  </CardContent>
+                  <div className={classes.controls}>
+                    <div className={classes.dialogControls}>
+                      <IconButton onClick={this.toDisplayContact(toDisplayResourceName, false)}>
+                        <NavigateBeforeIcon />
+                      </IconButton>
+                      <IconButton onClick={this.toDisplayContact(toDisplayResourceName, true)}>
+                        <NavigateNextIcon />
+                      </IconButton>
+                      <IconButton onClick={this.closeDisplayDialog}>
+                        <CloseIcon className={classes.closeIcon} />
+                      </IconButton>
+                    </div>
+                    <Button
+                      variant="contained" color="secondary"
+                      className={classes.deleteContactButton}
+                      onClick={this.toDeleteContact(toDisplayResourceName)}
+                    >
+                      删除
+                      <DeleteIcon className={classes.deleteContactIcon} />
+                    </Button>
                   </div>
-                  <Button
-                    variant="contained" color="secondary"
-                    className={classes.deleteContactButton}
-                    onClick={this.toDeleteContact(this.state.toDisplayResourceName)}
-                  >
-                    删除
-                    <DeleteIcon className={classes.deleteContactIcon} />
-                  </Button>
                 </div>
-              </div>
-              <CardMedia
-                className={classes.cover}
-                image={displayedContact.avatar}
-                title={displayedContact.name}
-              />
-            </Card>
+                <CardMedia
+                  className={classes.cover}
+                  image={displayedContact.avatar}
+                  title={displayedContact.name}
+                />
+              </Card>
+            )}
           </Dialog>
           <Dialog
             open={!!this.state.toDeleteResourceName}
@@ -301,13 +388,43 @@ class Contacts extends React.PureComponent<Props, State> {
           >
             <DialogTitle>创建联系人</DialogTitle>
             <DialogContent>
-            {/*   <TextField
+              <TextField
                 autoFocus
                 margin="dense"
-                label="Email Address"
-                type="email"
+                label="Nickname"
+                type="text"
+                value={this.state.newContactName}
+                onChange={this.createNewContactFieldChangeHandler('name')}
                 fullWidth
-              /> */}
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <AccountBoxIcon />
+                    </InputAdornment>
+                  ),
+                }}
+              />
+              <TextField
+                autoFocus
+                margin="dense"
+                label="Email"
+                type="email"
+                value={this.state.newContactEmail}
+                onChange={this.createNewContactFieldChangeHandler('email')}
+                fullWidth
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <EmailIcon />
+                    </InputAdornment>
+                  ),
+                }}
+              />
+              <DialogActions>
+                <Button variant="contained" color="primary" onClick={this.submitCreateForm}>
+                  提交
+                </Button>
+              </DialogActions>
             </DialogContent>
             <DialogActions>
               <Button onClick={this.closeCreateFormDialog} color="primary">
