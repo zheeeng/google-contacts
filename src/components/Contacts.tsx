@@ -435,7 +435,7 @@ class Contacts extends React.PureComponent<Props, State> {
   }
 
   componentDidMount () {
-    this.props.connectionService.fetchConnections()
+    this.props.connectionService.fetchContacts()
   }
 }
 

@@ -38,7 +38,7 @@ interface ConnectionService {
   isGettingConnections: boolean,
   connectionApiHasError: boolean,
   connections: Contact[],
-  fetchConnections: () => Promise<Person[]>,
+  fetchContacts: () => Promise<Person[]>,
   createContact: (contact: Partial<Contact>) => Promise<any>,
   deleteContact: (resourceName: string) => Promise<any>,
 }
@@ -59,7 +59,8 @@ const convertGroupToLabel = (group: Group): Label =>
 
 interface LabelService {
   labels: Label[],
-  fetchGroups: () => Promise<any>,
+  createLabel: (label: string) => Promise<any>,
+  fetchLabels: () => Promise<any>,
   groupMemberAPI?: gapi.client.people.MembersResource
 }
 
@@ -145,7 +146,7 @@ export function servletHub<P> (Component: React.ComponentType<P>) {
         isGettingConnections: this.state.isGettingConnections,
         connectionApiHasError: this.state.connectionApiHasError,
         connections: this.state.connections.map(convertPersonToContact),
-        fetchConnections: this.fetchConnections,
+        fetchContacts: this.fetchConnections,
         createContact: this.createContact,
         deleteContact: this.deleteContact,
       }
@@ -154,7 +155,8 @@ export function servletHub<P> (Component: React.ComponentType<P>) {
     private get groupService (): LabelService {
       return {
         labels: this.state.groups.map(convertGroupToLabel),
-        fetchGroups: this.fetchGroups,
+        createLabel: this.createGroup,
+        fetchLabels: this.fetchGroups,
         groupMemberAPI: this.groupMemberAPI,
       }
     }
@@ -284,6 +286,48 @@ export function servletHub<P> (Component: React.ComponentType<P>) {
           ...state,
           connectionApiHasError: true,
           isGettingConnections: false,
+        }))
+        throw toastCapture(error)
+      }
+    }
+
+    private createGroup = async (groupName: string, ...args: any[]) => {
+      const message = this.props.local.message
+
+      if (!this.groupAPI) {
+        this._tasks.push({
+          fn: this.createGroup,
+          args: [groupName].concat(args),
+        })
+
+        throw toastCapture(message.AUTH_UNINITIALIZED)
+      }
+
+      this.setState(state => ({
+        ...state,
+        groupApiHasError: false,
+        isCreatingGroup: false,
+      }))
+
+      try {
+        const response = await this.groupAPI.create({
+          contactGroup: {
+            name: groupName,
+          },
+        } as any)
+
+        const group = response.result || []
+        this.setState(state => ({
+          ...state,
+          groupApiHasError: false,
+          isCreatingGroup: false,
+          groups: state.groups.concat(group),
+        }))
+      } catch (error) {
+        this.setState(state => ({
+          ...state,
+          isCreatingGroup: false,
+          groupApiHasError: true,
         }))
         throw toastCapture(error)
       }
