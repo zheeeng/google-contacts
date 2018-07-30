@@ -148,9 +148,9 @@ export class AppSideBar extends React.PureComponent<Props, State> {
       newLabelName: '',
     }))
 
-    // this.props.groupService.groupApi.createGroup({
-    //   label: newLabelName,
-    // })
+    if (!newLabelName.trim()) return
+
+    this.props.groupService.createLabel(newLabelName)
   }
 
   private goTo = (path: string) => () => {
@@ -274,7 +274,7 @@ export class AppSideBar extends React.PureComponent<Props, State> {
   }
 
   componentDidMount () {
-    this.props.groupService.fetchGroups()
+    this.props.groupService.fetchLabels()
   }
 }
 
