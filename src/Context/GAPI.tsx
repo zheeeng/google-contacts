@@ -6,11 +6,12 @@ import { DomainPresets } from './locale.interface'
 
 export type User = gapi.auth2.GoogleUser
 export type Person = gapi.client.people.Person
+export type Group = gapi.client.people.ContactGroup
 
 type Store = {
   authService: AuthService,
   connectionService: ConnectionService,
-  groupService: GroupService,
+  groupService: LabelService,
 }
 
 interface AuthService {
@@ -28,6 +29,11 @@ export type Contact = {
   avatar: string,
   resourceName: string,
 }
+
+export type Label = {
+  resourceName: string,
+  name: string,
+}
 interface ConnectionService {
   isGettingConnections: boolean,
   connectionApiHasError: boolean,
@@ -44,8 +50,16 @@ const convertPersonToContact = (person: Person): Contact =>
     avatar: person.photos && person.photos[0] && person.photos[0].url || '',
     resourceName: person.resourceName!,
   })
-interface GroupService {
-  groupAPI?: gapi.client.people.ContactGroupsResource
+
+const convertGroupToLabel = (group: Group): Label =>
+  ({
+    name: group.name || '',
+    resourceName: group.resourceName!,
+  })
+
+interface LabelService {
+  labels: Label[],
+  fetchGroups: () => Promise<any>,
   groupMemberAPI?: gapi.client.people.MembersResource
 }
 
@@ -62,6 +76,11 @@ interface State {
   connectionApiHasError: boolean,
   isDeletingContact: boolean,
   isCreatingContact: boolean,
+  groups: Group[],
+  isGettingGroups: boolean,
+  isDeletingGroup: boolean,
+  isCreatingGroup: boolean,
+  groupApiHasError: boolean,
 }
 
 type QueuedTask = { fn: (...args: any[]) => Promise<any>, args: any[] }
@@ -91,6 +110,12 @@ export function servletHub<P> (Component: React.ComponentType<P>) {
       // delete
       isDeletingContact: false,
       isCreatingContact: false,
+      // group
+      groups: [],
+      isGettingGroups: false,
+      isDeletingGroup: false,
+      isCreatingGroup: false,
+      groupApiHasError: false,
     }
 
     private _tasks: QueuedTask[] = []
@@ -126,9 +151,10 @@ export function servletHub<P> (Component: React.ComponentType<P>) {
       }
     }
 
-    private get groupService (): GroupService {
+    private get groupService (): LabelService {
       return {
-        groupAPI: this.groupAPI,
+        labels: this.state.groups.map(convertGroupToLabel),
+        fetchGroups: this.fetchGroups,
         groupMemberAPI: this.groupMemberAPI,
       }
     }
@@ -263,6 +289,44 @@ export function servletHub<P> (Component: React.ComponentType<P>) {
       }
     }
 
+    private fetchGroups = async (...args: any[]) => {
+      const message = this.props.local.message
+
+      if (!this.groupAPI) {
+        this._tasks.push({
+          fn: this.fetchGroups,
+          args,
+        })
+
+        throw toastCapture(message.AUTH_UNINITIALIZED)
+      }
+
+      this.setState(state => ({
+        ...state,
+        isGettingGroups: true,
+        groupApiHasError: false,
+      }))
+
+      try {
+        const response = await this.groupAPI.list({})
+
+        const groups = response.result.contactGroups || []
+        this.setState(state => ({
+          ...state,
+          groupApiHasError: false,
+          isGettingGroups: false,
+          groups,
+        }))
+      } catch (error) {
+        this.setState(state => ({
+          ...state,
+          groupApiHasError: true,
+          isGettingGroups: false,
+        }))
+        throw toastCapture(error)
+      }
+    }
+
     private createContact = async (contact: Partial<Contact>, ...args: any[]) => {
       const message = this.props.local.message
 
@@ -317,6 +381,12 @@ export function servletHub<P> (Component: React.ComponentType<P>) {
         throw toastCapture(message.AUTH_UNINITIALIZED)
       }
 
+      this.setState(state => ({
+        ...state,
+        connectionApiHasError: false,
+        isDeletingContact: true,
+      }))
+
       try {
         await this.peopleAPI.deleteContact({
           resourceName,
@@ -325,9 +395,16 @@ export function servletHub<P> (Component: React.ComponentType<P>) {
         this.setState(state => ({
           ...state,
           connections: state.connections.filter(connection => connection.resourceName !== resourceName),
+          connectionApiHasError: false,
+          isDeletingContact: false,
         }))
       } catch (error) {
-        toastCapture(error)
+        this.setState(state => ({
+          ...state,
+          connectionApiHasError: true,
+          isDeletingContact: false,
+        }))
+        throw toastCapture(error)
       }
     }
   }
@@ -371,6 +448,29 @@ export function connectionServlet <P extends ConnectionServletProps> (
         <Consumer>
           {({ connectionService }) => (
             <Component {...this.props} connectionService={connectionService} />
+          )}
+        </Consumer>
+      )
+    }
+  }
+
+}
+
+export type GroupServletProps = Pick<Store, 'groupService'>
+
+export function groupServlet <P extends GroupServletProps> (
+  Component: React.ComponentType<P>,
+) {
+  const displayName = `GroupServletComponent(${Component.displayName || Component.name || 'Component'})`
+
+  return class ServletComponent extends React.PureComponent<Omit<P, keyof GroupServletProps>> {
+    static displayName = displayName
+
+    render () {
+      return (
+        <Consumer>
+          {({ groupService }) => (
+            <Component {...this.props} groupService={groupService} />
           )}
         </Consumer>
       )

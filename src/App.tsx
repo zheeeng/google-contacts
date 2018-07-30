@@ -36,7 +36,7 @@ const Old = () => <Typography variant="headline">旧版 Google Contacts</Typogra
 class App extends React.Component<Props> {
 
   private renderAuthOrMain = () =>
-    !this.props.authService || !this.props.authService.isSignedIn
+    !this.props.authService.isSignedIn
       ? (
         <Router>
           <Redirect noThrow from="*" to="/sign-in" />
