@@ -7,6 +7,7 @@ import Typography from '@material-ui/core/Typography'
 
 import {
   servletHub,
+  authServlet,
   AuthServletProps,
 } from '~src/Context/GAPI'
 import { provideLocales, localize } from '~src/Context/Locale'
@@ -24,7 +25,7 @@ const theme = createMuiTheme({
 })
 
 const Fallback = () => <Typography variant="headline">页面不存在</Typography>
-const Frequently = () => <Typography variant="headline">常用联系人</Typography>
+const Frequent = () => <Typography variant="headline">常用联系人</Typography>
 const Duplicates = () => <Typography variant="headline">重复联系人</Typography>
 const Label = () => <Typography variant="headline">标签</Typography>
 const Settings = () => <Typography variant="headline">设置</Typography>
@@ -35,7 +36,7 @@ const Old = () => <Typography variant="headline">旧版 Google Contacts</Typogra
 class App extends React.Component<Props> {
 
   private renderAuthOrMain = () =>
-    this.props.authService && !this.props.authService.isSignedIn
+    !this.props.authService || !this.props.authService.isSignedIn
       ? (
         <Router>
           <Redirect noThrow from="*" to="/sign-in" />
@@ -44,8 +45,9 @@ class App extends React.Component<Props> {
       ) : (
         <Router>
           <Main path="/">
+            <Redirect noThrow from="/" to="contacts" />
             <Contacts path="/contacts" />
-            <Frequently path="/frequent" />
+            <Frequent path="/frequent" />
             <Duplicates path="/duplicates" />
             <Label path="/label" />
             <Settings path="/settings" />
@@ -68,4 +70,4 @@ class App extends React.Component<Props> {
   }
 }
 
-export default provideLocales(localize(servletHub(App)))
+export default provideLocales(localize(servletHub(authServlet(App))))
