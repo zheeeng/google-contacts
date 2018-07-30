@@ -20,7 +20,7 @@
     "noImplicitReturns": true,
     "noImplicitThis": true,
     "noImplicitAny": true,
-    "noUnusedLocals": true,
+    // "noUnusedLocals": true,
     "noFallthroughCasesInSwitch": true,
     "suppressImplicitAnyIndexErrors": true,
     "experimentalDecorators": true
