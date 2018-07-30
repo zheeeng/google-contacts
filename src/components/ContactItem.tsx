@@ -32,7 +32,6 @@ class ContactItem extends React.PureComponent<Props> {
 
     return (
       <ListItem
-        key={contact.resourceName}
         dense
         button
         onClick={this.props.onClick}

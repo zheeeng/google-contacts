@@ -5,18 +5,12 @@ import Typography from '@material-ui/core/Typography'
 import CircularProgress from '@material-ui/core/CircularProgress'
 import Snackbar from '@material-ui/core/Snackbar'
 import List from '@material-ui/core/List'
-import ListItem from '@material-ui/core/ListItem'
-import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction'
-import ListItemText from '@material-ui/core/ListItemText'
 import TextField from '@material-ui/core/TextField'
 import InputAdornment from '@material-ui/core/InputAdornment'
 import AccountBoxIcon from '@material-ui/icons/AccountBox'
 import EmailIcon from '@material-ui/icons/Email'
-import Avatar from '@material-ui/core/Avatar'
 import Button from '@material-ui/core/Button'
 import IconButton from '@material-ui/core/IconButton'
-import StarIcon from '@material-ui/icons/Star'
-import EditIcon from '@material-ui/icons/Edit'
 import DeleteIcon from '@material-ui/icons/Delete'
 import AddIcon from '@material-ui/icons/Add'
 import Dialog from '@material-ui/core/Dialog'
@@ -31,6 +25,8 @@ import CloseIcon from '@material-ui/icons/Close'
 import NavigateNextIcon from '@material-ui/icons/NavigateNext'
 import Zoom from '@material-ui/core/Zoom'
 
+import ContactItem from './ContactItem'
+
 const styles = (theme: Theme) => createStyles({
   root: {
     width: '100%',
@@ -42,12 +38,6 @@ const styles = (theme: Theme) => createStyles({
   },
   progress: {
     marginTop: theme.spacing.unit * 4,
-  },
-  listItem: {
-    width: '100%',
-    // tslint:disable-next-line:max-line-length
-    margin: `${theme.spacing.unit}px -${theme.spacing.unit * 2}px ${theme.spacing.unit}px ${theme.spacing.unit * 2}px`,
-    backgroundColor: theme.palette.background.paper,
   },
   fab: {
     position: 'fixed',
@@ -116,8 +106,8 @@ class Contacts extends React.PureComponent<Props, State> {
   }
 
   private get displayedContact () {
-    return this.props.connectionService.connections
-      .find(connection => connection.resourceName === this.state.toDisplayResourceName)
+    return this.props.connectionService.contacts
+      .find(contact => contact.resourceName === this.state.toDisplayResourceName)
   }
 
   // nextOrPrev: undefined set current, true set next, false set prev
@@ -127,18 +117,18 @@ class Contacts extends React.PureComponent<Props, State> {
         state => ({ ...state, toDisplayResourceName: resourceName }),
       )
     } else {
-      const connections = this.props.connectionService.connections
-      const currentIndex = connections.findIndex(
+      const contacts = this.props.connectionService.contacts
+      const currentIndex = contacts.findIndex(
         contact => contact.resourceName === resourceName,
       )
 
-      if (nextOrPrev && (currentIndex < connections.length - 1)) {
-        const nextResource = connections[currentIndex + 1].resourceName
+      if (nextOrPrev && (currentIndex < contacts.length - 1)) {
+        const nextResource = contacts[currentIndex + 1].resourceName
         this.setState(
           state => ({ ...state, toDisplayResourceName: nextResource }),
         )
       } else if (!nextOrPrev && (currentIndex > 0)) {
-        const prevResource = connections[currentIndex - 1].resourceName
+        const prevResource = contacts[currentIndex - 1].resourceName
         this.setState(
           state => ({ ...state, toDisplayResourceName: prevResource }),
         )
@@ -242,34 +232,6 @@ class Contacts extends React.PureComponent<Props, State> {
       }
   }
 
-  private renderContact = (contact: Contact) =>
-    (
-      <ListItem
-        key={contact.resourceName}
-        dense
-        button
-        onClick={this.toDisplayContact(contact.resourceName)}
-        classes={{
-          container: this.props.classes.listItem,
-        }}
-      >
-        <Avatar alt={contact.name} src={contact.avatar || ''} />
-        <ListItemText primary={contact.name} />
-        <ListItemText primary={contact.email} />
-        <ListItemSecondaryAction>
-          <IconButton>
-            <StarIcon />
-          </IconButton>
-          <IconButton>
-            <EditIcon />
-          </IconButton>
-          <IconButton onClick={this.toDeleteContact(contact.resourceName)}>
-            <DeleteIcon />
-          </IconButton>
-        </ListItemSecondaryAction>
-      </ListItem>
-    )
-
   render () {
     const classes = this.props.classes
 
@@ -291,14 +253,21 @@ class Contacts extends React.PureComponent<Props, State> {
       )
     }
 
-    const connections = this.props.connectionService.connections
+    const contacts = this.props.connectionService.contacts
     const displayedContact = this.displayedContact || {} as Contact
     const toDisplayResourceName = this.state.toDisplayResourceName
 
     return (
       <>
         <List className={classes.root}>
-          {connections.map(this.renderContact)}
+          {contacts.map(contact => (
+            <ContactItem
+              key={contact.resourceName}
+              contact={contact}
+              onClick={this.toDisplayContact(contact.resourceName)}
+              onDelete={this.toDeleteContact(contact.resourceName)}
+            />
+          ))}
         </List>
         <>
           <Button variant="fab" className={classes.fab} onClick={this.openCreateFormDialog}>
