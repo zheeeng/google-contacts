@@ -42,15 +42,15 @@ class SignIn extends React.Component<Props> {
         <Typography variant="subheading" className={classes.subHeading}>
           Created witch stacks: React, TypeScript, Material-ui, Reach-Router
         </Typography>
-        {!authService.isSignedIn ? (
-          <Button variant="contained" color="primary" onClick={authService.signIn}>
-            <OpenInNewIcon className={classes.icon} />
-            Sign in with Google Account
-          </Button>
-        ) : (
+        {authService.isSigningIn && !authService.isSignedIn ? (
           <Button variant="contained" color="primary">
             <AutoRenewIcon className={classes.icon} />
             Initializing...
+          </Button>
+        ) : (
+          <Button variant="contained" color="primary" onClick={authService.signIn}>
+            <OpenInNewIcon className={classes.icon} />
+            Sign in with Google Account
           </Button>
         )}
       </div>
