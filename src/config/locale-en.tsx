@@ -1,4 +1,4 @@
-import { DomainPresets } from '~src/Context/locale.interface'
+import { DomainPresets } from '~src/context/locale.interface'
 
 const en: DomainPresets = {
   message: {

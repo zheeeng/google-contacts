@@ -22,7 +22,7 @@ const styles = (theme: Theme) => createStyles({
       background: fade(theme.palette.common.white, 0.25),
     },
   },
-  searchFocused: {
+  searchActive: {
     '&&': {
       maxWidth: 720,
       background: theme.palette.common.white,
@@ -42,7 +42,9 @@ const styles = (theme: Theme) => createStyles({
 })
 
 interface Props extends WithStyles<typeof styles> {
-  className?: string
+  className?: string,
+  searchValue: string,
+  changeSearchValue: (v: string) => void,
 }
 
 interface State {
@@ -62,16 +64,27 @@ class AppSearch extends React.PureComponent<Props, State> {
     this.setState(state => ({ ...state, focused: false }))
   }
 
+  private changeValue = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value
+    this.props.changeSearchValue(value)
+  }
+
+  private get isActive () {
+    return !!this.props.searchValue || this.state.focused
+  }
+
   render () {
     const { classes, className } = this.props
 
     return (
       <div className={classNames(classes.root, className)}>
-        <div className={classNames(classes.search, this.state.focused && classes.searchFocused)}>
+        <div className={classNames(classes.search, this.isActive && classes.searchActive)}>
           <SearchIcon className={classes.searchIcon}/>
           <Input
             disableUnderline
             placeholder="Search…"
+            value={this.props.searchValue}
+            onChange={this.changeValue}
             onFocus={this.onFocus}
             onBlur={this.onBlur}
             classes={{

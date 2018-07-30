@@ -28,7 +28,7 @@ import Button from '@material-ui/core/Button'
 import TextField from '@material-ui/core/TextField'
 import Zoom from '@material-ui/core/Zoom'
 
-import { groupServlet, GroupServletProps, Label } from '~src/Context/GAPI'
+import { groupServlet, GroupServletProps, Label } from '~src/context/GAPI'
 
 export const drawerWidth = 260
 

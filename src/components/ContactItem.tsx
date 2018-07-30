@@ -9,7 +9,7 @@ import EditIcon from '@material-ui/icons/Edit'
 import IconButton from '@material-ui/core/IconButton'
 import DeleteIcon from '@material-ui/icons/Delete'
 
-import { groupServlet, GroupServletProps, Label, Contact } from '~src/Context/GAPI'
+import { groupServlet, GroupServletProps, Contact } from '~src/context/GAPI'
 
 const styles = (theme: Theme) => createStyles({
   listItem: {

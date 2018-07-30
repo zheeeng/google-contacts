@@ -12,10 +12,11 @@ import MenuIcon from '@material-ui/icons/Menu'
 import AccountCircle from '@material-ui/icons/AccountCircle'
 import Divider from '@material-ui/core/Divider'
 
-import { authServlet, AuthServletProps } from '~src/Context/GAPI'
+import { authServlet, AuthServletProps } from '~src/context/GAPI'
 import AppSideBar, { drawerWidth } from './AppSideBar'
 import AppSearch from './AppSearch'
-import { localize, LocalizeProps  } from '~src/Context/Locale'
+import { AppSearchValueConsumer } from '~src/context/AppSearchValue'
+import { localize, LocalizeProps  } from '~src/context/Locale'
 
 const styles = (theme: Theme) => createStyles({
   root: {
@@ -116,7 +117,15 @@ export class Main extends React.Component<Props, State> {
             Google Contacts
           </Typography>
         </Hidden>
-        <AppSearch className={classes.appSearch}/>
+        <AppSearchValueConsumer>
+          {({ searchValue, changeSearchValue }) => (
+            <AppSearch
+              className={classes.appSearch}
+              searchValue={searchValue}
+              changeSearchValue={changeSearchValue}
+            />
+          )}
+        </AppSearchValueConsumer>
         <div>
           <IconButton
             onClick={this.handleAccountMenuClick}

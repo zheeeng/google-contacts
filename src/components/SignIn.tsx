@@ -5,7 +5,7 @@ import Typography from '@material-ui/core/Typography'
 import OpenInNewIcon from '@material-ui/icons/OpenInNew'
 import AutoRenewIcon from '@material-ui/icons/Autorenew'
 
-import { authServlet, AuthServletProps } from '~src/Context/GAPI'
+import { authServlet, AuthServletProps } from '~src/context/GAPI'
 
 const styles = (theme: Theme) => createStyles({
   root: {

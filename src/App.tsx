@@ -5,12 +5,9 @@ import { createMuiTheme, MuiThemeProvider } from '@material-ui/core/styles'
 import indigo from '@material-ui/core/colors/indigo'
 import Typography from '@material-ui/core/Typography'
 
-import {
-  servletHub,
-  authServlet,
-  AuthServletProps,
-} from '~src/Context/GAPI'
-import { provideLocales, localize, LocalizeProps } from '~src/Context/Locale'
+import AppSearchValue from '~src/context/AppSearchValue'
+import { servletHub, authServlet, AuthServletProps } from '~src/context/GAPI'
+import { provideLocales, localize, LocalizeProps } from '~src/context/Locale'
 
 import Main from '~src/components/Main'
 import SignIn from '~src/components/SignIn'
@@ -62,10 +59,12 @@ class App extends React.Component<Props> {
 
   render () {
     return (
-      <MuiThemeProvider theme={theme}>
-        <CssBaseline />
-        {this.renderAuthOrMain()}
-      </MuiThemeProvider>
+      <AppSearchValue>
+        <MuiThemeProvider theme={theme}>
+          <CssBaseline />
+          {this.renderAuthOrMain()}
+        </MuiThemeProvider>
+      </AppSearchValue>
     )
   }
 }
