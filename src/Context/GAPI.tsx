@@ -33,12 +33,13 @@ export type Contact = {
 export type Label = {
   resourceName: string,
   name: string,
+  memberCount: number,
 }
 interface ConnectionService {
   isGettingConnections: boolean,
   connectionApiHasError: boolean,
   contacts: Contact[],
-  fetchContacts: () => Promise<Person[]>,
+  fetchContacts: () => Promise<any>,
   createContact: (contact: Partial<Contact>) => Promise<any>,
   deleteContact: (resourceName: string) => Promise<any>,
 }
@@ -55,13 +56,15 @@ const convertGroupToLabel = (group: Group): Label =>
   ({
     name: group.name || '',
     resourceName: group.resourceName!,
+    memberCount: group.memberCount || 0,
   })
 
 interface LabelService {
   labels: Label[],
+  getLabelMembers: (resourceName: string) => Contact[],
   createLabel: (label: string) => Promise<any>,
   fetchLabels: () => Promise<any>,
-  groupMemberAPI?: gapi.client.people.MembersResource
+  fetchLabelMembers: (resourceName: string) => Promise<any>
 }
 
 interface ServletHubProps {
@@ -82,6 +85,9 @@ interface State {
   isDeletingGroup: boolean,
   isCreatingGroup: boolean,
   groupApiHasError: boolean,
+  groupPersonMap: WeakMap<Group, Person[]>,
+  isGettingGroupMembers: boolean,
+  groupMemberApiHasError: boolean,
 }
 
 type QueuedTask = { fn: (...args: any[]) => Promise<any>, args: any[] }
@@ -102,7 +108,7 @@ export function servletHub<P> (Component: React.ComponentType<P>) {
     state: State = {
       // auth
       user: undefined,
-      isSigningIn: false,
+      isSigningIn: true,
       isSigningOut: false,
       // connection
       connections: [],
@@ -117,6 +123,10 @@ export function servletHub<P> (Component: React.ComponentType<P>) {
       isDeletingGroup: false,
       isCreatingGroup: false,
       groupApiHasError: false,
+      // groupContactsWMap
+      groupPersonMap: new WeakMap(),
+      isGettingGroupMembers: false,
+      groupMemberApiHasError: false,
     }
 
     private _tasks: QueuedTask[] = []
@@ -152,13 +162,14 @@ export function servletHub<P> (Component: React.ComponentType<P>) {
       }
     }
 
-    private get groupService (): LabelService {
-      return {
-        labels: this.state.groups.map(convertGroupToLabel),
-        createLabel: this.createGroup,
-        fetchLabels: this.fetchGroups,
-        groupMemberAPI: this.groupMemberAPI,
-      }
+    private getLabelMembers = (resourceName: string): Contact[] => {
+      const group = this.state.groups.find(g => g.resourceName === resourceName)
+
+      if (!group) return []
+
+      const persons = this.state.groupPersonMap.get(group) || []
+
+      return persons.map(convertPersonToContact)
     }
 
     render () {
@@ -213,9 +224,9 @@ export function servletHub<P> (Component: React.ComponentType<P>) {
     private signIn = async () => {
       const message = this.props.local.message
 
-      if (!this.authInstance) throw toastCapture(message.AUTH_UNINITIALIZED)
-      if (this.state.isSigningIn) throw toastCapture(message.AUTH_IS_SIGNING_IN)
-      if (this.state.isSigningOut) throw toastCapture(message.AUTH_IS_SIGNING_OUT)
+      if (!this.authInstance) return toastCapture(message.AUTH_UNINITIALIZED)
+      if (this.state.isSigningIn) return toastCapture(message.AUTH_IS_SIGNING_IN)
+      if (this.state.isSigningOut) return toastCapture(message.AUTH_IS_SIGNING_OUT)
 
       this.setState(state => ({ ...state, isSigningIn: true }))
 
@@ -223,7 +234,7 @@ export function servletHub<P> (Component: React.ComponentType<P>) {
         const user = await this.authInstance.signIn()
         this.setState(state => ({ ...state, user }))
       } catch (e) {
-        throw toastCapture(e)
+        return toastCapture(e)
       } finally {
         this.setState(state => ({ ...state, isSigningIn: false }))
       }
@@ -232,16 +243,16 @@ export function servletHub<P> (Component: React.ComponentType<P>) {
     private singOut = async () => {
       const message = this.props.local.message
 
-      if (!this.authInstance) throw toastCapture(message.AUTH_UNINITIALIZED)
-      if (this.state.isSigningIn) throw toastCapture(message.AUTH_IS_SIGNING_IN)
-      if (this.state.isSigningOut) throw toastCapture(message.AUTH_IS_SIGNING_OUT)
+      if (!this.authInstance) return toastCapture(message.AUTH_UNINITIALIZED)
+      if (this.state.isSigningIn) return toastCapture(message.AUTH_IS_SIGNING_IN)
+      if (this.state.isSigningOut) return toastCapture(message.AUTH_IS_SIGNING_OUT)
       this.setState(state => ({ ...state, isSigningOut: true }))
 
       try {
         await this.authInstance.signOut()
         this.setState(state => ({ ...state, user: undefined }))
       } catch (e) {
-        throw toastCapture(e)
+        return toastCapture(e)
       } finally {
         this.setState(state => ({ ...state, isSigningOut: false }))
       }
@@ -256,7 +267,7 @@ export function servletHub<P> (Component: React.ComponentType<P>) {
           args,
         })
 
-        throw toastCapture(message.AUTH_UNINITIALIZED)
+        return toastCapture(message.AUTH_UNINITIALIZED)
       }
 
       this.setState(state => ({
@@ -287,7 +298,7 @@ export function servletHub<P> (Component: React.ComponentType<P>) {
           connectionApiHasError: true,
           isGettingConnections: false,
         }))
-        throw toastCapture(error)
+        return toastCapture(error)
       }
     }
 
@@ -300,7 +311,7 @@ export function servletHub<P> (Component: React.ComponentType<P>) {
           args: [groupName].concat(args),
         })
 
-        throw toastCapture(message.AUTH_UNINITIALIZED)
+        return toastCapture(message.AUTH_UNINITIALIZED)
       }
 
       this.setState(state => ({
@@ -329,7 +340,7 @@ export function servletHub<P> (Component: React.ComponentType<P>) {
           isCreatingGroup: false,
           groupApiHasError: true,
         }))
-        throw toastCapture(error)
+        return toastCapture(error)
       }
     }
 
@@ -342,7 +353,7 @@ export function servletHub<P> (Component: React.ComponentType<P>) {
           args,
         })
 
-        throw toastCapture(message.AUTH_UNINITIALIZED)
+        return toastCapture(message.AUTH_UNINITIALIZED)
       }
 
       this.setState(state => ({
@@ -367,7 +378,7 @@ export function servletHub<P> (Component: React.ComponentType<P>) {
           groupApiHasError: true,
           isGettingGroups: false,
         }))
-        throw toastCapture(error)
+        return toastCapture(error)
       }
     }
 
@@ -380,7 +391,7 @@ export function servletHub<P> (Component: React.ComponentType<P>) {
           args: [contact].concat(args),
         })
 
-        throw toastCapture(message.AUTH_UNINITIALIZED)
+        return toastCapture(message.AUTH_UNINITIALIZED)
       }
 
       this.setState(state => ({
@@ -409,7 +420,7 @@ export function servletHub<P> (Component: React.ComponentType<P>) {
           isCreatingContact: false,
           connectionApiHasError: true,
         }))
-        throw toastCapture(error)
+        return toastCapture(error)
       }
     }
 
@@ -422,7 +433,7 @@ export function servletHub<P> (Component: React.ComponentType<P>) {
           args: [resourceName].concat(args),
         })
 
-        throw toastCapture(message.AUTH_UNINITIALIZED)
+        return toastCapture(message.AUTH_UNINITIALIZED)
       }
 
       this.setState(state => ({
@@ -448,9 +459,76 @@ export function servletHub<P> (Component: React.ComponentType<P>) {
           connectionApiHasError: true,
           isDeletingContact: false,
         }))
-        throw toastCapture(error)
+        return toastCapture(error)
       }
     }
+
+    private fetchLabelMembers = async (resourceName: string, ...args: any[]) => {
+      const message = this.props.local.message
+
+      if (!this.groupAPI || !this.peopleAPI) {
+        this._tasks.push({
+          fn: this.fetchLabelMembers,
+          args: [resourceName].concat(args),
+        })
+
+        return toastCapture(message.AUTH_UNINITIALIZED)
+      }
+
+      this.setState(state => ({
+        ...state,
+        groupApiHasError: false,
+        isGettingGroupMembers: true,
+      }))
+
+      try {
+        const groupResponse = await this.groupAPI.get({
+          resourceName,
+          maxMembers: 25,
+        })
+
+        const names = groupResponse.result.memberResourceNames
+
+        if (!names) return
+
+        const group = this.state.groups.find(g => g.resourceName === resourceName)
+
+        if (!group) return
+
+        const peopleResponse = await this.peopleAPI.getBatchGet({
+          resourceNames: names as any,
+          personFields: 'names,emailAddresses,phoneNumbers,nicknames,photos',
+        })
+
+        const connections = (peopleResponse.result.responses || []).map(res => res.person!)
+
+        this.state.groupPersonMap.set(group, connections)
+
+        this.setState(state => ({
+          ...state,
+          groupApiHasError: false,
+          isGettingGroupMembers: false,
+        }))
+      } catch (error) {
+        this.setState(state => ({
+          ...state,
+          groupApiHasError: true,
+          isGettingGroupMembers: false,
+        }))
+        return toastCapture(error)
+      }
+    }
+
+    private get groupService (): LabelService {
+      return {
+        labels: this.state.groups.map(convertGroupToLabel),
+        getLabelMembers: this.getLabelMembers,
+        createLabel: this.createGroup,
+        fetchLabels: this.fetchGroups,
+        fetchLabelMembers: this.fetchLabelMembers,
+      }
+    }
+
   }
 }
 

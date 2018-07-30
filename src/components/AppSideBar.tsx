@@ -74,8 +74,8 @@ const baseItems = [
 
 const convertLabelToLabelItem = (label: Label) => ({
   icon: <LabelIcon />,
-  path: `/label/${label.resourceName}`,
-  labelText: label.name,
+  path: `/label/${encodeURIComponent(label.resourceName)}`,
+  labelText: `${label.name}` + (label.memberCount ? ` (${label.memberCount})` : ''),
 })
 
 const moreItems = [
