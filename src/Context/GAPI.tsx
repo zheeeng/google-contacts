@@ -33,7 +33,8 @@ interface ConnectionService {
   connectionApiHasError: boolean,
   connections: Contact[],
   fetchConnections: () => Promise<Person[]>,
-  deleteContact: (resourceName: string) => Promise<any>
+  createContact: (contact: Partial<Contact>) => Promise<any>,
+  deleteContact: (resourceName: string) => Promise<any>,
 }
 
 const convertPersonToContact = (person: Person): Contact =>
@@ -163,6 +164,7 @@ export function servletHub<P> (Component: React.ComponentType<P>) {
         connectionApiHasError: this.state.connectionApiHasError,
         connections: this.state.connections.map(convertPersonToContact),
         fetchConnections: this.fetchConnections,
+        createContact: this.createContact,
         deleteContact: this.deleteContact,
       }
     }
@@ -182,7 +184,6 @@ export function servletHub<P> (Component: React.ComponentType<P>) {
     }
 
     initClient = async () => {
-
       await gapi.client.init(clientConfig)
 
       this.authInstance = gapi.auth2.getAuthInstance()
@@ -290,6 +291,48 @@ export function servletHub<P> (Component: React.ComponentType<P>) {
           ...state,
           connectionApiHasError: true,
           isGettingConnections: false,
+        }))
+        throw toastCapture(error)
+      }
+    }
+
+    private createContact = async (contact: Partial<Contact>, ...args: any[]) => {
+      const message = this.props.local.message
+
+      if (!this.peopleAPI) {
+        this._tasks.push({
+          fn: this.createContact,
+          args: [contact].concat(args),
+        })
+
+        throw toastCapture(message.AUTH_UNINITIALIZED)
+      }
+
+      this.setState(state => ({
+        ...state,
+        connectionApiHasError: false,
+        isCreatingContact: false,
+      }))
+
+      try {
+        const response = await this.peopleAPI.createContact({
+          parent: 'people/me',
+          emailAddresses: [{ value: contact.email || '' }],
+          names: [{ displayName: contact.name || '' }],
+        } as any)
+
+        const connection = response.result || []
+        this.setState(state => ({
+          ...state,
+          connectionApiHasError: false,
+          isCreatingContact: false,
+          connections: state.connections.concat(connection),
+        }))
+      } catch (error) {
+        this.setState(state => ({
+          ...state,
+          isCreatingContact: false,
+          connectionApiHasError: true,
         }))
         throw toastCapture(error)
       }
