@@ -5,7 +5,7 @@ import Typography from '@material-ui/core/Typography'
 import OpenInNewIcon from '@material-ui/icons/OpenInNew'
 import AutoRenewIcon from '@material-ui/icons/Autorenew'
 
-import { groupServlet, GroupServletProps, Label } from '~src/Context/GAPI'
+import { groupServlet, GroupServletProps, Contact } from '~src/Context/GAPI'
 
 const styles = (theme: Theme) => createStyles({
   root: {
@@ -27,9 +27,15 @@ const styles = (theme: Theme) => createStyles({
   },
 })
 
-type Props = GroupServletProps & WithStyles<typeof styles>
+type Props = GroupServletProps & WithStyles<typeof styles> & {
+  id?: string,
+}
 
-class LabelPage extends React.PureComponent<Props> {
+type State = {
+}
+
+class LabelPage extends React.PureComponent<Props, State> {
+
   render () {
     return (
       <div>hello</div>
@@ -37,7 +43,17 @@ class LabelPage extends React.PureComponent<Props> {
   }
 
   componentDidMount () {
-    // this.props.groupService.fetchLabels()
+    if (!this.props.id) return
+
+    this.props.groupService.fetchLabelMembers(this.props.id)
+  }
+
+  componentDidUpdate (prevProp: Props) {
+    if (!this.props.id) return
+
+    if (this.props.id !== prevProp.id) {
+      this.props.groupService.fetchLabelMembers(this.props.id)
+    }
   }
 }
 
