@@ -75,7 +75,7 @@ class Contacts extends React.PureComponent<Props, State> {
     if (toDeleteResourceName) {
       this.setState(state => ({ ...state, toDeleteResourceName: '' }))
 
-      this.props.connectionService && this.props.connectionService.deleteContact(toDeleteResourceName)
+      this.props.connectionService.deleteContact(toDeleteResourceName)
     }
   }
 
@@ -127,19 +127,25 @@ class Contacts extends React.PureComponent<Props, State> {
   render () {
     const classes = this.props.classes
 
-    if (!this.props.connectionService) {
-      return  <Typography variant="headline">服务初始化...</Typography>
-    }
-
-    const connections = this.props.connectionService.connections
-
-    if (!connections.length) {
+    if (this.props.connectionService.isGettingConnections) {
       return (
         <div className={classes.root}>
           <CircularProgress className={classes.progress} size={50} />
         </div>
       )
     }
+
+    if (this.props.connectionService.connectionApiHasError) {
+      return (
+        <div className={classes.root}>
+          <Typography variant="headline">
+            Some errors happens! Try refresh this page.
+          </Typography>
+        </div>
+      )
+    }
+
+    const connections = this.props.connectionService.connections
 
     return (
       <>
@@ -170,7 +176,7 @@ class Contacts extends React.PureComponent<Props, State> {
   }
 
   componentDidMount () {
-    this.props.connectionService && this.props.connectionService.getConnections()
+    this.props.connectionService.fetchConnections()
   }
 }
 

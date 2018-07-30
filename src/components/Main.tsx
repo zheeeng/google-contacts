@@ -10,9 +10,12 @@ import Typography from '@material-ui/core/Typography'
 import IconButton from '@material-ui/core/IconButton'
 import MenuIcon from '@material-ui/icons/Menu'
 import AccountCircle from '@material-ui/icons/AccountCircle'
+import Divider from '@material-ui/core/Divider'
 
+import { authServlet, AuthServletProps } from '~src/Context/GAPI'
 import AppSideBar, { drawerWidth } from './AppSideBar'
 import AppSearch from './AppSearch'
+import { localize, LocalizeProps  } from '~src/Context/Locale'
 
 const styles = (theme: Theme) => createStyles({
   root: {
@@ -24,7 +27,6 @@ const styles = (theme: Theme) => createStyles({
     display: 'flex',
     flexDirection: 'column',
   },
-  toolbar: theme.mixins.toolbar,
   appBar: {
     zIndex: 1201,
   },
@@ -39,8 +41,6 @@ const styles = (theme: Theme) => createStyles({
     paddingBottom: theme.spacing.unit * 3,
     paddingLeft: theme.spacing.unit,
     marginLeft: drawerWidth,
-    display: 'flex',
-    flexDirection: 'row',
     transition: theme.transitions.create(['margin', 'width'], {
       easing: theme.transitions.easing.sharp,
       duration: theme.transitions.duration.leavingScreen,
@@ -54,14 +54,13 @@ const styles = (theme: Theme) => createStyles({
   },
 })
 
-interface Props extends WithStyles<typeof styles> {
-}
+type Props = AuthServletProps & LocalizeProps & WithStyles<typeof styles>
 interface State {
   drawerOpen: boolean,
   accountMenuAnchorEl?: HTMLElement,
 }
 
-export class Main extends React.PureComponent<Props, State> {
+export class Main extends React.Component<Props, State> {
   state = {
     drawerOpen: true,
     accountMenuAnchorEl: undefined,
@@ -76,7 +75,28 @@ export class Main extends React.PureComponent<Props, State> {
     this.setState(state => ({ ...state, accountMenuAnchorEl: event.target }))
   }
   private handleAccountMenuClose = () => {
-    this.setState(state => ({ ...state, accountMenuAnchorEl: undefined }))
+    this.setState(state => ({
+      ...state,
+      accountMenuAnchorEl: undefined,
+    }))
+  }
+  private handleLanguageChangeClick = (locale: string) => () => {
+    this.setState(
+      state => ({
+        ...state,
+        accountMenuAnchorEl: undefined,
+      }),
+      () => { this.props.changeLocale && this.props.changeLocale(locale) },
+    )
+  }
+  private handleSignOutClick = () => {
+    this.setState(
+      state => ({
+        ...state,
+        accountMenuAnchorEl: undefined,
+      }),
+      () => { this.props.authService.signOut() },
+    )
   }
 
   private renderAppBar = () => {
@@ -117,10 +137,14 @@ export class Main extends React.PureComponent<Props, State> {
             open={!!this.state.accountMenuAnchorEl}
             onClose={this.handleAccountMenuClose}
           >
-            <MenuItem onClick={this.handleAccountMenuClose}>
-              Language
+            <MenuItem onClick={this.handleLanguageChangeClick('zh')}>
+              中文
             </MenuItem>
-            <MenuItem onClick={this.handleAccountMenuClose}>
+            <MenuItem onClick={this.handleLanguageChangeClick('en')}>
+              English
+            </MenuItem>
+            <Divider />
+            <MenuItem onClick={this.handleSignOutClick}>
               Sign Out
             </MenuItem>
           </Menu>
@@ -142,7 +166,6 @@ export class Main extends React.PureComponent<Props, State> {
           onClose={this.handleDrawerToggle}
         />
         <main className={classNames(classes.content, !this.state.drawerOpen && classes.contentShiftLeft)}>
-          <div className={classes.toolbar} />
           {this.props.children}
         </main>
       </div>
@@ -150,4 +173,4 @@ export class Main extends React.PureComponent<Props, State> {
   }
 }
 
-export default withStyles(styles)(Main)
+export default withStyles(styles)(localize(authServlet(Main)))

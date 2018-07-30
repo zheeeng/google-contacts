@@ -10,13 +10,13 @@ import {
   authServlet,
   AuthServletProps,
 } from '~src/Context/GAPI'
-import { provideLocales, localize } from '~src/Context/Locale'
+import { provideLocales, localize, LocalizeProps } from '~src/Context/Locale'
 
 import Main from '~src/components/Main'
 import SignIn from '~src/components/SignIn'
 import Contacts from '~src/components/Contacts'
 
-interface Props extends AuthServletProps {}
+type Props = AuthServletProps & LocalizeProps
 
 const theme = createMuiTheme({
   palette: {
@@ -45,7 +45,7 @@ class App extends React.Component<Props> {
       ) : (
         <Router>
           <Main path="/">
-            <Redirect noThrow from="/" to="contacts" />
+            <Redirect noThrow from="/sign-in" to="/contacts" />
             <Contacts path="/contacts" />
             <Frequent path="/frequent" />
             <Duplicates path="/duplicates" />

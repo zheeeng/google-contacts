@@ -31,7 +31,7 @@ const styles = (theme: Theme) => createStyles({
 })
 
 type Props = AuthServletProps & WithStyles<typeof styles>
-class SignIn extends React.PureComponent<Props> {
+class SignIn extends React.Component<Props> {
   render () {
     const { classes, authService } = this.props
     return (
@@ -42,7 +42,7 @@ class SignIn extends React.PureComponent<Props> {
         <Typography variant="subheading" className={classes.subHeading}>
           Created witch stacks: React, TypeScript, Material-ui, Reach-Router
         </Typography>
-        {authService ? (
+        {authService.isSignedIn ? (
           <Button variant="contained" color="primary" onClick={authService.signIn}>
             <OpenInNewIcon className={classes.icon} />
             Sign in with Google Account
