@@ -22,7 +22,6 @@ import AddIcon from '@material-ui/icons/Add'
 import Dialog from '@material-ui/core/Dialog'
 import DialogActions from '@material-ui/core/DialogActions'
 import DialogContent from '@material-ui/core/DialogContent'
-import DialogContentText from '@material-ui/core/DialogContentText'
 import DialogTitle from '@material-ui/core/DialogTitle'
 import Card from '@material-ui/core/Card'
 import CardContent from '@material-ui/core/CardContent'
@@ -420,11 +419,6 @@ class Contacts extends React.PureComponent<Props, State> {
                   ),
                 }}
               />
-              <DialogActions>
-                <Button variant="contained" color="primary" onClick={this.submitCreateForm}>
-                  提交
-                </Button>
-              </DialogActions>
             </DialogContent>
             <DialogActions>
               <Button onClick={this.closeCreateFormDialog} color="primary">
