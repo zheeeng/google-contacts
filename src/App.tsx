@@ -14,7 +14,8 @@ import { provideLocales, localize, LocalizeProps } from '~src/Context/Locale'
 
 import Main from '~src/components/Main'
 import SignIn from '~src/components/SignIn'
-import Contacts from '~src/components/Contacts'
+import ContactsPage from '~src/components/ContactsPage'
+import LabelPage from '~src/components/LabelPage'
 
 type Props = AuthServletProps & LocalizeProps
 
@@ -27,7 +28,6 @@ const theme = createMuiTheme({
 const Fallback = () => <Typography variant="headline">页面不存在</Typography>
 const Frequent = () => <Typography variant="headline">常用联系人</Typography>
 const Duplicates = () => <Typography variant="headline">重复联系人</Typography>
-const Label = () => <Typography variant="headline">标签</Typography>
 const Settings = () => <Typography variant="headline">设置</Typography>
 const Feedback = () => <Typography variant="headline">反馈</Typography>
 const Help = () => <Typography variant="headline">帮助</Typography>
@@ -46,10 +46,10 @@ class App extends React.Component<Props> {
         <Router>
           <Main path="/">
             <Redirect noThrow from="/sign-in" to="/contacts" />
-            <Contacts path="/contacts" />
+            <ContactsPage path="/contacts" />
+            <LabelPage path="/label/:id" />
             <Frequent path="/frequent" />
             <Duplicates path="/duplicates" />
-            <Label path="/label" />
             <Settings path="/settings" />
             <Feedback path="/feedback" />
             <Help path="/help" />
