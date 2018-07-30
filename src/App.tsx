@@ -1,5 +1,6 @@
 import React from 'react'
 import { Router, Redirect } from '@reach/router'
+import Loadable from 'react-loadable'
 import CssBaseline from '@material-ui/core/CssBaseline'
 import { createMuiTheme, MuiThemeProvider } from '@material-ui/core/styles'
 import indigo from '@material-ui/core/colors/indigo'
@@ -11,8 +12,6 @@ import { provideLocales, localize, LocalizeProps } from '~src/context/Locale'
 
 import Main from '~src/components/Main'
 import SignIn from '~src/components/SignIn'
-import ContactsPage from '~src/components/ContactsPage'
-import LabelPage from '~src/components/LabelPage'
 
 type Props = AuthServletProps & LocalizeProps
 
@@ -22,6 +21,15 @@ const theme = createMuiTheme({
   },
 })
 
+const Loading = () => <Typography variant="headline">Loading...</Typography>
+const ContactsPage = Loadable({
+  loader: () => import('~src/components/ContactsPage'),
+  loading: Loading,
+})
+const LabelPage = Loadable({
+  loader: () => import('~src/components/LabelPage'),
+  loading: Loading,
+})
 const Fallback = () => <Typography variant="headline">页面不存在</Typography>
 const Frequent = () => <Typography variant="headline">常用联系人</Typography>
 const Duplicates = () => <Typography variant="headline">重复联系人</Typography>
