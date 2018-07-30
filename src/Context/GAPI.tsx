@@ -8,9 +8,9 @@ export type User = gapi.auth2.GoogleUser
 export type Person = gapi.client.people.Person
 
 type Store = {
-  authService?: AuthService,
-  connectionService?: ConnectionService,
-  groupService?: GroupService,
+  authService: AuthService,
+  connectionService: ConnectionService,
+  // groupService: GroupService,
 }
 
 interface AuthService {
@@ -22,8 +22,10 @@ interface AuthService {
   isSigningOut: boolean,
 }
 interface ConnectionService {
-  connections: any,
-  getConnections: () => Promise<any>,
+  isGettingConnections: boolean,
+  connectionApiHasError: boolean,
+  connections: Person[],
+  fetchConnections: () => Promise<Person[]>,
   deleteContact: (resourceName: string) => Promise<any>
 }
 interface GroupService {}
@@ -38,14 +40,14 @@ interface State {
   isSigningOut: boolean,
   connections: Person[],
   isGettingConnections: boolean,
-  getConnectionError: boolean,
+  connectionApiHasError: boolean,
   isDeletingContact: boolean,
   isCreatingContact: boolean,
 }
 
 type QueuedTask = { fn: (...args: any[]) => Promise<any>, args: any[] }
 
-const { Provider, Consumer } = React.createContext<Store>({})
+const { Provider, Consumer } = React.createContext<Store>({} as Store)
 
 export {
   Consumer,
@@ -66,7 +68,7 @@ export function servletHub<P> (Component: React.ComponentType<P>) {
       // connection
       connections: [],
       isGettingConnections: false,
-      getConnectionError: false,
+      connectionApiHasError: false,
       // delete
       isDeletingContact: false,
       isCreatingContact: false,
@@ -129,9 +131,7 @@ export function servletHub<P> (Component: React.ComponentType<P>) {
       return !!this.authInstance && this.authInstance.isSignedIn.get()
     }
 
-    private get authService (): AuthService | undefined {
-      if (!this.authInstance) return undefined
-
+    private get authService (): AuthService {
       return {
         user: this.state.user,
         signIn: this.signIn,
@@ -143,8 +143,10 @@ export function servletHub<P> (Component: React.ComponentType<P>) {
     }
     private get connectionService (): ConnectionService {
       return {
+        isGettingConnections: this.state.isGettingConnections,
+        connectionApiHasError: this.state.connectionApiHasError,
         connections: this.state.connections,
-        getConnections: this.getConnections,
+        fetchConnections: this.fetchConnections,
         deleteContact: this.deleteContact,
       }
     }
@@ -199,9 +201,9 @@ export function servletHub<P> (Component: React.ComponentType<P>) {
     private signIn = async () => {
       const message = this.props.local.message
 
-      if (!this.authInstance) return toastCapture(message.AUTH_UNINITIALIZED)
-      if (this.state.isSigningIn) return toastCapture(message.AUTH_IS_SIGNING_IN)
-      if (this.state.isSigningOut) return toastCapture(message.AUTH_IS_SIGNING_OUT)
+      if (!this.authInstance) throw toastCapture(message.AUTH_UNINITIALIZED)
+      if (this.state.isSigningIn) throw toastCapture(message.AUTH_IS_SIGNING_IN)
+      if (this.state.isSigningOut) throw toastCapture(message.AUTH_IS_SIGNING_OUT)
 
       this.setState(state => ({ ...state, isSigningIn: true }))
 
@@ -218,9 +220,9 @@ export function servletHub<P> (Component: React.ComponentType<P>) {
     private singOut = async () => {
       const message = this.props.local.message
 
-      if (!this.authInstance) return toastCapture(message.AUTH_UNINITIALIZED)
-      if (this.state.isSigningIn) return toastCapture(message.AUTH_IS_SIGNING_IN)
-      if (this.state.isSigningOut) return toastCapture(message.AUTH_IS_SIGNING_OUT)
+      if (!this.authInstance) throw toastCapture(message.AUTH_UNINITIALIZED)
+      if (this.state.isSigningIn) throw toastCapture(message.AUTH_IS_SIGNING_IN)
+      if (this.state.isSigningOut) throw toastCapture(message.AUTH_IS_SIGNING_OUT)
       this.setState(state => ({ ...state, isSigningOut: true }))
 
       try {
@@ -233,22 +235,22 @@ export function servletHub<P> (Component: React.ComponentType<P>) {
       }
     }
 
-    private getConnections = async (...args: any[]) => {
+    private fetchConnections = async (...args: any[]) => {
       const message = this.props.local.message
 
       if (!this.connectionAPI) {
         this._tasks.push({
-          fn: this.getConnections,
+          fn: this.fetchConnections,
           args,
         })
 
-        return toastCapture(message.AUTH_UNINITIALIZED)
+        throw toastCapture(message.AUTH_UNINITIALIZED)
       }
 
       this.setState(state => ({
         ...state,
         isGettingConnections: true,
-        getConnectionError: false,
+        connectionApiHasError: false,
       }))
 
       try {
@@ -259,18 +261,21 @@ export function servletHub<P> (Component: React.ComponentType<P>) {
         })
 
         const connections = response.result.connections || []
-        this.setState(state => ({ ...state, connections }))
-      } catch (error) {
-        await toastCapture(error)
         this.setState(state => ({
           ...state,
-          getConnectionError: true,
+          connectionApiHasError: false,
+          isGettingConnections: false,
+          connections,
         }))
-      } finally {
+
+        return connections
+      } catch (error) {
         this.setState(state => ({
           ...state,
+          connectionApiHasError: true,
           isGettingConnections: false,
         }))
+        throw toastCapture(error)
       }
     }
 
@@ -283,7 +288,7 @@ export function servletHub<P> (Component: React.ComponentType<P>) {
           args: [resourceName].concat(args),
         })
 
-        return toastCapture(message.AUTH_UNINITIALIZED)
+        throw toastCapture(message.AUTH_UNINITIALIZED)
       }
 
       try {
@@ -304,12 +309,12 @@ export function servletHub<P> (Component: React.ComponentType<P>) {
 
 export type AuthServletProps = Pick<Store, 'authService'>
 
-export function authServlet <P> (
-  Component: React.ComponentType<P & AuthServletProps>,
+export function authServlet <P extends AuthServletProps> (
+  Component: React.ComponentType<P>,
 ) {
   const displayName = `AuthServletComponent(${Component.displayName || Component.name || 'Component'})`
 
-  return class ServletComponent extends React.PureComponent<P> {
+  return class ServletComponent extends React.PureComponent<Omit<P, keyof AuthServletProps>> {
     static displayName = displayName
 
     render () {
@@ -327,12 +332,12 @@ export function authServlet <P> (
 
 export type ConnectionServletProps = Pick<Store, 'connectionService'>
 
-export function connectionServlet <P> (
-  Component: React.ComponentType<P & ConnectionServletProps>,
+export function connectionServlet <P extends ConnectionServletProps> (
+  Component: React.ComponentType<P>,
 ) {
   const displayName = `ConnectionServletComponent(${Component.displayName || Component.name || 'Component'})`
 
-  return class ServletComponent extends React.PureComponent<P> {
+  return class ServletComponent extends React.PureComponent<Omit<P, keyof ConnectionServletProps>> {
     static displayName = displayName
 
     render () {
