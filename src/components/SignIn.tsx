@@ -2,7 +2,10 @@ import React from 'react'
 import { withStyles, WithStyles, createStyles, Theme } from '@material-ui/core/styles'
 import Button from '@material-ui/core/Button'
 import Typography from '@material-ui/core/Typography'
-import OpenInNew from '@material-ui/icons/OpenInNew'
+import OpenInNewIcon from '@material-ui/icons/OpenInNew'
+import AutoRenewIcon from '@material-ui/icons/Autorenew'
+
+import { authServlet, AuthServletProps } from '~src/Context/GAPI'
 
 const styles = (theme: Theme) => createStyles({
   root: {
@@ -22,16 +25,15 @@ const styles = (theme: Theme) => createStyles({
   subHeading: {
     marginBottom: theme.spacing.unit * 5,
   },
-  signInIcon: {
+  icon: {
     marginRight: theme.spacing.unit,
   },
 })
 
-interface Props extends WithStyles<typeof styles> {
-}
+type Props = AuthServletProps & WithStyles<typeof styles>
 class SignIn extends React.PureComponent<Props> {
   render () {
-    const { classes } = this.props
+    const { classes, authService } = this.props
     return (
       <div className={classes.root}>
         <Typography variant="headline" className={classes.heading}>
@@ -40,13 +42,20 @@ class SignIn extends React.PureComponent<Props> {
         <Typography variant="subheading" className={classes.subHeading}>
           Created witch stacks: React, TypeScript, Material-ui, Reach-Router
         </Typography>
-        <Button variant="contained" color="primary">
-          <OpenInNew className={classes.signInIcon} />
-          Sign in with Google Account
-        </Button>
+        {authService ? (
+          <Button variant="contained" color="primary" onClick={authService.signIn}>
+            <OpenInNewIcon className={classes.icon} />
+            Sign in with Google Account
+          </Button>
+        ) : (
+          <Button variant="contained" color="primary">
+            <AutoRenewIcon className={classes.icon} />
+            Initializing...
+          </Button>
+        )}
       </div>
     )
   }
 }
 
-export default withStyles(styles)(SignIn)
+export default authServlet(withStyles(styles)(SignIn))
