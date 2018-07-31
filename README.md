@@ -7,7 +7,7 @@ https://contacts.zheeeng.me
 
 ## Setup
 
-### prerequisite
+### Prerequisite
 
 Make sure you have got the Google APP Key and a Client ID, you may get them through the following link:
 
