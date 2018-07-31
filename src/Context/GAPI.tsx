@@ -26,6 +26,8 @@ interface AuthService {
 export type Contact = {
   name: string,
   email: string,
+  familyName: string,
+  givenName: string,
   avatar: string,
   resourceName: string,
 }
@@ -48,6 +50,8 @@ const convertPersonToContact = (person: Person): Contact =>
   ({
     name: person.names && person.names[0] && person.names[0].displayName || '',
     email: person.emailAddresses && person.emailAddresses[0] && person.emailAddresses[0].value || '',
+    familyName: person.names && person.names[0] && person.names[0].familyName || '',
+    givenName: person.names && person.names[0] && person.names[0].givenName || '',
     avatar: person.photos && person.photos[0] && person.photos[0].url || '',
     resourceName: person.resourceName!,
   })
@@ -382,13 +386,13 @@ export function servletHub<P> (Component: React.ComponentType<P>) {
       }
     }
 
-    private createContact = async (contact: Partial<Contact>, ...args: any[]) => {
+    private createContact = async (contactInfo: Partial<Contact>, ...args: any[]) => {
       const message = this.props.local.message
 
       if (!this.peopleAPI) {
         this._tasks.push({
           fn: this.createContact,
-          args: [contact].concat(args),
+          args: [contactInfo].concat(args),
         })
 
         return toastCapture(message.AUTH_UNINITIALIZED)
@@ -403,8 +407,8 @@ export function servletHub<P> (Component: React.ComponentType<P>) {
       try {
         const response = await this.peopleAPI.createContact({
           parent: 'people/me',
-          emailAddresses: [{ value: contact.email || '' }],
-          names: [{ displayName: contact.name || '' }],
+          emailAddresses: [{ value: contactInfo.email || '' }],
+          names: [{ familyName: contactInfo.familyName || '',  givenName: contactInfo.givenName || '' }],
         } as any)
 
         const connection = response.result || []

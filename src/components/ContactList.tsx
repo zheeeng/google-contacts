@@ -83,14 +83,21 @@ const styles = (theme: Theme) => createStyles({
     height: 24,
     width: 24,
   },
+  textFieldContainer: {
+    display: 'flex',
+    flexWrap: 'wrap',
+  },
+  textFieldItem: {
+    'flexBasis': '50%',
+    '&:not(:last-child)': {
+      paddingRight: theme.spacing.unit,
+    },
+  },
 })
 
 type Props = WithStyles<typeof styles> & {
   contacts: Contact[],
-  createContact: (c: {
-    name: string,
-    email: string,
-  }) => void,
+  createContact: (contact: Partial<Contact>) => void,
   isGettingConnections: boolean,
   hasError: boolean,
   deleteContact: (r: string) => void,
@@ -101,7 +108,8 @@ interface State {
   toDeleteResourceName: string,
   createFormDialogOpen: boolean,
   notificationMessage: string,
-  newContactName: string,
+  newContactFamilyName: string,
+  newContactGivenName: string,
   newContactEmail: string,
 }
 
@@ -111,7 +119,8 @@ class ContactList extends React.PureComponent<Props, State> {
     toDeleteResourceName: '',
     createFormDialogOpen: false,
     notificationMessage: '',
-    newContactName: '',
+    newContactFamilyName: '',
+    newContactGivenName: '',
     newContactEmail: '',
   }
 
@@ -183,7 +192,7 @@ class ContactList extends React.PureComponent<Props, State> {
     this.setState(state => ({
       ...state,
       createFormDialogOpen: true,
-      newContactName: '',
+      newContactFamilyName: '',
       newContactEmail: '',
     }))
   }
@@ -192,14 +201,14 @@ class ContactList extends React.PureComponent<Props, State> {
     this.setState(state => ({
       ...state,
       createFormDialogOpen: false,
-      newContactName: '',
+      newContactFamilyName: '',
       newContactEmail: '',
     }))
   }
 
   private submitCreateForm = () => {
-    const { newContactName, newContactEmail } = this.state
-    if (!newContactName) {
+    const { newContactFamilyName, newContactGivenName, newContactEmail } = this.state
+    if (!newContactFamilyName || !newContactGivenName) {
       this.notification('用户名不能为空')
       return
     }
@@ -213,22 +222,27 @@ class ContactList extends React.PureComponent<Props, State> {
     this.setState(state => ({
       ...state,
       createFormDialogOpen: false,
-      newContactName: '',
+      newContactFamilyName: '',
       newContactEmail: '',
     }))
 
     this.props.createContact({
-      name: newContactName,
+      familyName: newContactFamilyName,
+      givenName: newContactGivenName,
       email: newContactEmail,
     })
   }
 
   private createNewContactFieldChangeHandler =
-    (field: 'email' | 'name') => (e: React.ChangeEvent<HTMLInputElement>) => {
+    (field: 'email' | 'familyName' | 'givenName') => (e: React.ChangeEvent<HTMLInputElement>) => {
       const value = e.target.value
       switch (field) {
-        case 'name': {
-          this.setState(state => ({ ...state, newContactName: value }))
+        case 'familyName': {
+          this.setState(state => ({ ...state, newContactFamilyName: value }))
+          return
+        }
+        case 'givenName': {
+          this.setState(state => ({ ...state, newContactGivenName: value }))
           return
         }
         case 'email': {
@@ -374,22 +388,42 @@ class ContactList extends React.PureComponent<Props, State> {
           >
             <DialogTitle>创建联系人</DialogTitle>
             <DialogContent>
-              <TextField
-                autoFocus
-                margin="dense"
-                label="Nickname"
-                type="text"
-                value={this.state.newContactName}
-                onChange={this.createNewContactFieldChangeHandler('name')}
-                fullWidth
-                InputProps={{
-                  startAdornment: (
-                    <InputAdornment position="start">
-                      <AccountBoxIcon />
-                    </InputAdornment>
-                  ),
-                }}
-              />
+              <div className={classes.textFieldContainer}>
+                <TextField
+                  autoFocus
+                  margin="dense"
+                  label="FamilyName"
+                  type="text"
+                  value={this.state.newContactFamilyName}
+                  onChange={this.createNewContactFieldChangeHandler('familyName')}
+                  fullWidth
+                  className={classes.textFieldItem}
+                  InputProps={{
+                    startAdornment: (
+                      <InputAdornment position="start">
+                        <AccountBoxIcon />
+                      </InputAdornment>
+                    ),
+                  }}
+                />
+                <TextField
+                  autoFocus
+                  margin="dense"
+                  label="GivenName"
+                  type="text"
+                  value={this.state.newContactGivenName}
+                  onChange={this.createNewContactFieldChangeHandler('givenName')}
+                  fullWidth
+                  className={classes.textFieldItem}
+                  InputProps={{
+                    startAdornment: (
+                      <InputAdornment position="start">
+                        <AccountBoxIcon />
+                      </InputAdornment>
+                    ),
+                  }}
+                />
+              </div>
               <TextField
                 autoFocus
                 margin="dense"
