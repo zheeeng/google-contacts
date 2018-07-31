@@ -1,4 +1,7 @@
 # Google Contacts
+
+[![Greenkeeper badge](https://badges.greenkeeper.io/zheeeng/Google-contacts.svg)](https://greenkeeper.io/)
+
 Google Contacts Demo
 
 # Demo Site
