@@ -1,9 +1,9 @@
 # Google Contacts
 
-[![Greenkeeper badge](https://badges.greenkeeper.io/zheeeng/Google-contacts.svg)](https://greenkeeper.io/)
+[![Greenkeeper badge](https://badges.greenkeeper.io/zheeeng/google-contacts.svg)](https://greenkeeper.io/)
 [![language](https://img.shields.io/badge/%3C%2F%3E-TypeScript-blue.svg)](http://typescriptlang.org/)
 [![license](https://img.shields.io/github/license/mashape/apistatus.svg)]()
-[![travis](https://img.shields.io/travis/zheeeng/Google-contacts.svg)](https://travis-ci.org/zheeeng/Google-contacts/)
+[![travis](https://img.shields.io/travis/zheeeng/google-contacts.svg)](https://travis-ci.org/zheeeng/Google-contacts/)
 [![demo](https://img.shields.io/badge/Demo-GithubPages-green.svg)](https://contacts.zheeeng.me/)
 
 Google Contacts Demo
