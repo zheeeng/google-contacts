@@ -210,7 +210,7 @@ export class AppSideBar extends React.PureComponent<Props, State> {
           {this.renderCreateLabelItem()}
         </List>
         <Divider />
-        <List>{moreItems.map(this.renderDrawerItem)}}</List>
+        <List>{moreItems.map(this.renderDrawerItem)}</List>
       </>
     )
 
