@@ -88,9 +88,10 @@
   dependencies:
     "@types/gapi" "*"
 
-"@types/gapi.client.people@^1.0.0":
-  version "1.0.0"
-  resolved "https://registry.yarnpkg.com/@types/gapi.client.people/-/gapi.client.people-1.0.0.tgz#03c266aa8494081e4a30c5796d577190faec95f0"
+"@types/gapi.client.people@^1.0.1":
+  version "1.0.1"
+  resolved "https://registry.yarnpkg.com/@types/gapi.client.people/-/gapi.client.people-1.0.1.tgz#cdf3bdeb3bc32991b9e14c28c6226ecac666a5e6"
+  integrity sha512-e31dC4qlH/SKLFsvCUIWa5NA+aFs3VToUGGpGGJ8ejggdoLvHtjUVbgrpJI+P9/Zz1Zv9eSkr9551/9H2mPSAQ==
   dependencies:
     "@types/gapi.client" "*"
 
