@@ -6094,10 +6094,10 @@ rc@^1.0.1, rc@^1.1.6, rc@^1.2.7:
     minimist "^1.2.0"
     strip-json-comments "~2.0.1"
 
-react-app-rewired@^2.0.2:
-  version "2.0.2"
-  resolved "https://registry.yarnpkg.com/react-app-rewired/-/react-app-rewired-2.0.2.tgz#2c92ba443eb8f5e8ca062eab6d2353fc2ae1197e"
-  integrity sha512-2gw8rU/acYcqlYO0DJBPG97eape4T0kC7sPx4fJzooq30sv6KUxC+dYy5vyWY3L7AnkcKVRM+KZIRD8hCaXbHA==
+react-app-rewired@^2.1.1:
+  version "2.1.1"
+  resolved "https://registry.yarnpkg.com/react-app-rewired/-/react-app-rewired-2.1.1.tgz#cf8bf22e027f4272dae95d2f7da07f2639701422"
+  integrity sha512-Ukj2vbKN61bPF3f1EJLe2LtaKJio++iqUoyTQ5VAzyj7XRthkDrk4sGFaTjJrmWt7yJ/Ry9JbFGGSmfzlbt5Cg==
   dependencies:
     cross-spawn "^6.0.5"
     dotenv "^6.2.0"
