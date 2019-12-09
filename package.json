@@ -10,7 +10,7 @@
     "@types/gapi": "^0.0.36",
     "@types/gapi.auth2": "^0.0.50",
     "@types/reach__router": "^1.0.0",
-    "@types/react-loadable": "^5.4.0",
+    "@types/react-loadable": "^5.5.3",
     "classnames": "^2.2.6",
     "react": "^16.4.1",
     "react-dom": "^16.4.1",
