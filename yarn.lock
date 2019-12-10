@@ -98,9 +98,14 @@
   version "1.0.0"
   resolved "https://registry.yarnpkg.com/@types/gapi.client/-/gapi.client-1.0.0.tgz#aa42501465fcf6440421050da70ec724d4c4c4df"
 
-"@types/gapi@*", "@types/gapi@^0.0.36":
+"@types/gapi@*":
   version "0.0.36"
   resolved "https://registry.yarnpkg.com/@types/gapi/-/gapi-0.0.36.tgz#e7fb3d4d4a6fbdbd0a9aef1cbd93d3b115d59a3d"
+
+"@types/gapi@^0.0.37":
+  version "0.0.37"
+  resolved "https://registry.yarnpkg.com/@types/gapi/-/gapi-0.0.37.tgz#956a8560d6d787e225b77a8496491fa3a43f1838"
+  integrity sha512-M0zsJ3toXPHJupmeuaSwzjiq7z2C/i9acvMiHVnqwKeXxVVeXLrEEqBtLb3ejg3IWL10EN7NxapkT4oLlok5/Q==
 
 "@types/jest@^24.0.0":
   version "24.0.0"
