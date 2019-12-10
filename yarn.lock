@@ -81,10 +81,10 @@
   version "2.2.6"
   resolved "https://registry.yarnpkg.com/@types/classnames/-/classnames-2.2.6.tgz#dbe8a666156d556ed018e15a4c65f08937c3f628"
 
-"@types/gapi.auth2@^0.0.50":
-  version "0.0.50"
-  resolved "https://registry.yarnpkg.com/@types/gapi.auth2/-/gapi.auth2-0.0.50.tgz#f0631a288d44fc439b6744dbf66a4187b1189c91"
-  integrity sha512-yQe75u0GZZYGg1VLnnGAK4mpb1gJrTSNPCDncEBrVpMuWQY2etBgrdPFDeR5dDn9ntZCjmuD9bMptdxCke+1bQ==
+"@types/gapi.auth2@^0.0.51":
+  version "0.0.51"
+  resolved "https://registry.yarnpkg.com/@types/gapi.auth2/-/gapi.auth2-0.0.51.tgz#01410ccff41ec0eb744635d806557de9393c76a7"
+  integrity sha512-j66GKDjxM01HLBpwFlii0E3Bsn7+dn1qabgosGSWhuM0/waHZ8ooT/T3M5U9mdx6BQ4sk+gzW1HDux00yZVWRw==
   dependencies:
     "@types/gapi" "*"
 
